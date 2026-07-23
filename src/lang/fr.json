@@ -223,7 +223,17 @@
     "lien_inscription": "Lien d'inscription à partager",
     "copier_lien": "Copier le lien",
     "lien_copie": "Lien copié",
-    "effectif_auto": "Calculé sur les inscrits confirmés. Modifiable pour tester un autre effectif."
+    "effectif_auto": "Calculé sur les inscrits confirmés. Modifiable pour tester un autre effectif.",
+    "format_attendu": "Format attendu",
+    "aide_format": "Une question par ligne, séparée de sa réponse par une barre verticale. Le point-virgule et la tabulation fonctionnent aussi.",
+    "exemple_format": "Quelle plante calme la toux ? | Le thym\nQuelle feuille fait baisser la fièvre ? | Le neem",
+    "lignes_valides": "prête(s) à importer",
+    "lignes_ignorees": "ligne(s) sans réponse — elles ne seront PAS importées",
+    "corriger_lignes": "Corrigez-les ou supprimez-les avant d'importer.",
+    "rien_a_importer": "Aucune ligne exploitable pour l'instant.",
+    "apercu_import": "Aperçu",
+    "questions_de_la_manche": "Questions de cette manche",
+    "aide_choix_manche": "Choisissez la manche à préparer. La banque sert à écrire les questions avant que les manches existent."
   },
   "nav": {
     "accueil": "Accueil",

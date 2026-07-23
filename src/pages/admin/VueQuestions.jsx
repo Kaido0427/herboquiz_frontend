@@ -45,14 +45,34 @@ export default function VueQuestions() {
    * sont ignorees plutot que de faire echouer tout l'import — on prefere
    * importer 18 questions sur 20 et signaler, que de tout rejeter.
    */
-  const analyserLot = () => lot
-    .split('\n')
-    .map((l) => l.split('|'))
-    .filter((p) => p.length >= 2 && p[0].trim() && p[1].trim())
-    .map((p) => ({ texte: p[0].trim(), reponse: p.slice(1).join('|').trim() }))
+  const analyserLot = () => {
+    const valides = []
+    const rejetees = []
+
+    lot.split('\n').forEach((ligne, i) => {
+      if (!ligne.trim()) return
+
+      // Plusieurs separateurs acceptes : on recopie souvent depuis un tableur
+      // ou un document, ou la tabulation et le point-virgule sont courants.
+      const sep = ['|', '\t', ';'].find((c) => ligne.includes(c))
+      if (!sep) { rejetees.push({ n: i + 1, texte: ligne.trim() }); return }
+
+      const [avant, ...apres] = ligne.split(sep)
+      const texte = avant.trim()
+      const reponse = apres.join(sep).trim()
+
+      // Une question sans reponse ne sert a rien en direct : l'animateur ne
+      // saurait pas quoi valider. On la signale au lieu de la jeter en silence.
+      if (!texte || !reponse) { rejetees.push({ n: i + 1, texte: ligne.trim() }); return }
+
+      valides.push({ texte, reponse })
+    })
+
+    return { valides, rejetees }
+  }
 
   const importer = useMutation({
-    mutationFn: () => questionService.creerLot(mancheId, analyserLot()),
+    mutationFn: () => questionService.creerLot(mancheId, analyserLot().valides),
     onSuccess: () => { setLot(''); setModeLot(false); rafraichir() },
   })
 
@@ -63,7 +83,7 @@ export default function VueQuestions() {
     onSuccess: () => { setSelection([]); setCible(''); rafraichir() },
   })
 
-  const valides = analyserLot().length
+  const { valides, rejetees } = analyserLot()
 
   return (
     <div>
@@ -80,7 +100,7 @@ export default function VueQuestions() {
             <option key={m.id} value={m.id}>{m.libelle}</option>
           ))}
         </select>
-        <p className="mt-1.5 text-xs text-texte-faible">{t('admin.aide_banque')}</p>
+        <p className="mt-1.5 text-xs text-texte-faible">{t('admin.aide_choix_manche')}</p>
       </div>
 
       {(
@@ -101,13 +121,45 @@ export default function VueQuestions() {
 
           {modeLot ? (
             <div className="carte p-5 mb-6">
-              <p className="text-xs text-texte-faible mb-3 leading-relaxed">{t('admin.aide_coller')}</p>
+              <p className="text-xs text-texte-faible mb-2 leading-relaxed">{t('admin.aide_format')}</p>
+              <pre className="mb-3 rounded-lg bg-fond-2 border border-bord p-3 text-[11px] text-texte-doux overflow-x-auto whitespace-pre">{t('admin.exemple_format')}</pre>
+
               <textarea rows={8} value={lot} onChange={(e) => setLot(e.target.value)}
                         className={CHAMP + ' resize-y leading-relaxed'} />
-              <button onClick={() => importer.mutate()} disabled={!valides || importer.isPending}
+
+              {/* Compte-rendu AVANT l'import. Sans lui, une ligne mal formee
+                  disparaissait sans un mot : on croyait avoir importe vingt
+                  questions, il y en avait dix-huit. */}
+              {lot.trim() && (
+                <div className="mt-3 text-xs">
+                  {valides.length > 0 && (
+                    <p className="text-succes">
+                      <strong>{valides.length}</strong> {t('admin.lignes_valides')}
+                    </p>
+                  )}
+                  {rejetees.length > 0 && (
+                    <div className="mt-2 rounded-lg border border-alerte/40 bg-alerte/10 p-3">
+                      <p className="text-alerte">
+                        <strong>{rejetees.length}</strong> {t('admin.lignes_ignorees')}
+                      </p>
+                      <ul className="mt-1.5 space-y-0.5 text-texte-doux">
+                        {rejetees.slice(0, 6).map((r) => (
+                          <li key={r.n} className="truncate">ligne {r.n} : « {r.texte} »</li>
+                        ))}
+                      </ul>
+                      <p className="mt-2 text-texte-faible">{t('admin.corriger_lignes')}</p>
+                    </div>
+                  )}
+                  {valides.length === 0 && rejetees.length === 0 && (
+                    <p className="text-texte-faible">{t('admin.rien_a_importer')}</p>
+                  )}
+                </div>
+              )}
+
+              <button onClick={() => importer.mutate()} disabled={!valides.length || importer.isPending}
                       className="mt-3 w-full flex items-center justify-center gap-2 rounded-xl bg-neon text-fond font-semibold py-3 tape disabled:opacity-40">
                 <Check size={16} />
-                {t('admin.importer')} {valides > 0 && `(${valides})`}
+                {t('admin.importer')} {valides.length > 0 && `(${valides.length})`}
               </button>
             </div>
           ) : (

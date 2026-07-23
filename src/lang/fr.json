@@ -14,7 +14,8 @@
     "non": "Non",
     "aucun_resultat": "Aucun résultat",
     "erreur": "Une erreur est survenue.",
-    "confirmer": "Confirmer"
+    "confirmer": "Confirmer",
+    "reessayer": "Réessayer"
   },
   "connexion": {
     "titre": "Connexion",
@@ -269,8 +270,10 @@
     "accueil": "Accueil",
     "animation": "Animer",
     "admin": "Administration",
-    "vers_animation": "Mode animateur",
-    "vers_admin": "Retour admin"
+    "vers_animation": "Animer",
+    "vers_animation_aide": "Passer en mode animateur",
+    "vers_admin": "Admin",
+    "vers_admin_aide": "Revenir à l'administration"
   },
   "editeur": {
     "gras": "Gras",

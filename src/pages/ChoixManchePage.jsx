@@ -23,10 +23,10 @@ export default function ChoixManchePage() {
         <h1 className="titre text-2xl font-bold flex-1">{t('animation.choisir_manche')}</h1>
         {/* Reserve a l'admin : un animateur n'a pas d'espace admin ou revenir. */}
         {estAdmin && (
-          <Link to="/admin" title={t('nav.vers_admin')}
-                className="flex items-center gap-1.5 rounded-lg border border-neon-sourd text-neon px-2.5 py-1.5 text-xs tape hover:bg-neon/10 transition-colors">
+          <Link to="/admin" title={t('nav.vers_admin_aide')}
+                className="flex items-center gap-1.5 rounded-lg border border-neon-sourd text-neon px-2.5 py-1.5 text-xs whitespace-nowrap tape hover:bg-neon/10 transition-colors">
             <ShieldCheck size={14} />
-            <span className="hidden sm:inline">{t('nav.vers_admin')}</span>
+            {t('nav.vers_admin')}
           </Link>
         )}
         <button onClick={deconnexion} className="text-texte-faible hover:text-danger transition-colors">

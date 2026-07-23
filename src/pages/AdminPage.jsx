@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Users, UsersRound, LayoutGrid, Settings, KeyRound, Trash2, Plus,
   RefreshCw, LogOut, Check, ChevronRight, Menu, X, ShieldCheck, Wand2,
-  Swords, HelpCircle, Trophy, ArrowRight, MessageCircle, ExternalLink, Eye, Copy, Check as CheckIcon,
+  Swords, HelpCircle, Trophy, ArrowRight, MessageCircle, Eye, Copy, Check as CheckIcon,
   BarChart3, Send,
 } from 'lucide-react'
 import {
@@ -113,10 +113,13 @@ export default function AdminPage() {
               ouvertes a tout compte connecte, pas reservees). Ce raccourci lui
               evite de se deconnecter pour rejoindre l'ecran animateur en plein
               direct, quand le groupe attend. */}
-          <Link to="/animation" title={t('nav.vers_animation')}
-                className="flex items-center gap-1.5 rounded-lg border border-neon-sourd text-neon px-2.5 py-1.5 text-xs tape hover:bg-neon/10 transition-colors">
+          {/* Libelle TOUJOURS visible : masque sous sm, il ne restait qu'une
+              icone muette sur telephone — or c'est justement la que l'admin
+              s'en sert. Verifie : il tient jusqu'a 320 px de large. */}
+          <Link to="/animation" title={t('nav.vers_animation_aide')}
+                className="flex items-center gap-1.5 rounded-lg border border-neon-sourd text-neon px-2.5 py-1.5 text-xs whitespace-nowrap tape hover:bg-neon/10 transition-colors">
             <MessageCircle size={14} />
-            <span className="hidden sm:inline">{t('nav.vers_animation')}</span>
+            {t('nav.vers_animation')}
           </Link>
           {/* Aller voir la page publique ne doit pas obliger a se deconnecter. */}
           <Link to="/" title={t('admin.voir_annonce')}

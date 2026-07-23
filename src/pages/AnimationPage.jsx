@@ -28,7 +28,7 @@ export default function AnimationPage() {
   const [flash, setFlash] = useState(null)
   const [transition, setTransition] = useState(false)
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: QUERY_KEYS.animation(mancheId),
     queryFn: () => animationService.vue(mancheId),
     // Deux animateurs peuvent tenir deux poules en parallele : on rafraichit
@@ -99,6 +99,25 @@ export default function AnimationPage() {
     return <p className="p-6 text-texte-doux">{t('commun.chargement')}</p>
   }
 
+  // Sans ce garde-fou, une coupure reseau laissait `data` vide : la
+  // destructuration plantait et l'ecran devenait BLANC, sans un mot, en plein
+  // match. Mieux vaut dire que ca a rate et offrir de reessayer.
+  if (!data) {
+    return (
+      <div className="p-6">
+        <p className="text-texte-doux">{t('commun.erreur')}</p>
+        <button onClick={() => refetch()}
+                className="mt-4 flex items-center gap-2 rounded-xl bg-neon text-fond font-semibold px-5 py-3 tape">
+          <RotateCcw size={16} />
+          {t('commun.reessayer')}
+        </button>
+        <Link to="/animation" className="mt-4 block text-sm text-texte-faible hover:text-neon">
+          {t('animation.retour_manches')}
+        </Link>
+      </div>
+    )
+  }
+
   const { manche, question, equipes, classement } = data
   const scores = Object.fromEntries(classement.map((c) => [c.equipe_id, c.points]))
   const enCours = attribuer.isPending || annuler.isPending || transition
@@ -109,44 +128,14 @@ export default function AnimationPage() {
   const enBarrage = classement.filter((c) => c.barrage_requis)
   const vainqueurBarrage = classement.find((c) => c.departage)
 
-  const PanneauBarrage = () => {
-    if (enBarrage.length < 2 && !vainqueurBarrage) return null
-
-    return (
-      <div className="mt-6 rounded-2xl border border-alerte/50 bg-alerte/10 p-4 anim-monte">
-        <div className="flex items-center gap-2">
-          <Scale size={16} className="text-alerte shrink-0" />
-          <p className="text-sm font-semibold text-alerte">{t('animation.egalite_parfaite')}</p>
-        </div>
-
-        {vainqueurBarrage ? (
-          <>
-            <p className="mt-2 text-sm text-texte-doux">
-              {t('animation.departage_applique', { equipe: vainqueurBarrage.libelle })}
-            </p>
-            <button onClick={() => barrage.mutate(null)} disabled={barrage.isPending}
-                    className="mt-3 flex items-center gap-2 text-sm text-texte-faible hover:text-danger transition-colors disabled:opacity-50">
-              <RotateCcw size={14} />
-              {t('animation.retirer_departage')}
-            </button>
-          </>
-        ) : (
-          <>
-            <p className="mt-1 text-xs text-texte-doux leading-relaxed">{t('animation.aide_barrage')}</p>
-            <p className="mt-3 text-sm text-texte-doux">{t('animation.designer_vainqueur')}</p>
-            <div className="mt-2 grid gap-2">
-              {enBarrage.map((c) => (
-                <button key={c.equipe_id} onClick={() => barrage.mutate(c.equipe_id)} disabled={barrage.isPending}
-                        className="flex items-center justify-between rounded-xl bg-surface border border-bord px-4 py-3 text-left tape hover:border-neon disabled:opacity-50">
-                  <span className="font-medium">{c.libelle}</span>
-                  <span className="text-texte-faible tabular-nums">{c.points}</span>
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-    )
+  // Les props du panneau, rassemblees une fois : il est rendu a deux endroits
+  // (manche en cours et classement final).
+  const propsBarrage = {
+    enBarrage,
+    vainqueur: vainqueurBarrage,
+    onTrancher: (id) => barrage.mutate(id),
+    onRetirer: () => barrage.mutate(null),
+    enAttente: barrage.isPending,
   }
 
   return (
@@ -225,7 +214,7 @@ export default function AnimationPage() {
             ))}
           </ol>
 
-          <PanneauBarrage />
+          <PanneauBarrage {...propsBarrage} />
 
           <p className="mt-4 text-xs text-texte-faible leading-relaxed">{t('animation.aide_terminee')}</p>
 
@@ -254,7 +243,7 @@ export default function AnimationPage() {
               onClick={copierQuestion}
               className={cn(
                 'mt-4 w-full flex items-center justify-center gap-2 rounded-xl py-3 font-semibold transition-colors',
-                copie ? 'bg-succes text-fond' : 'bg-neon text-fond halo-neon',
+                copie ? 'bg-succes text-fond' : 'bg-neon text-fond halo',
               )}
             >
               {copie ? <Check size={18} /> : <Copy size={18} />}
@@ -320,7 +309,7 @@ export default function AnimationPage() {
           </button>
         </div>
 
-        <PanneauBarrage />
+        <PanneauBarrage {...propsBarrage} />
 
         <p className="mt-8 mb-2 text-sm text-texte-doux">{t('animation.classement')}</p>
         <ol className="rounded-2xl bg-surface border border-bord divide-y divide-bord">
@@ -343,11 +332,61 @@ export default function AnimationPage() {
 }
 
 /**
+ * Barrage : la sortie de secours quand la rapidite ne departage plus.
+ *
+ * Defini au niveau module, PAS dans le corps de l'ecran : une fonction
+ * composant recreee a chaque rendu est un TYPE different pour React, qui
+ * demonte puis remonte le panneau — l'animation d'entree se rejouait donc a
+ * chaque rafraichissement (toutes les 15 s) en plein match.
+ */
+export function PanneauBarrage({ enBarrage, vainqueur, onTrancher, onRetirer, enAttente }) {
+  const { t } = useTranslation()
+
+  if (enBarrage.length < 2 && !vainqueur) return null
+
+  return (
+    <div className="mt-6 rounded-2xl border border-alerte/50 bg-alerte/10 p-4 anim-monte">
+      <div className="flex items-center gap-2">
+        <Scale size={16} className="text-alerte shrink-0" />
+        <p className="text-sm font-semibold text-alerte">{t('animation.egalite_parfaite')}</p>
+      </div>
+
+      {vainqueur ? (
+        <>
+          <p className="mt-2 text-sm text-texte-doux">
+            {t('animation.departage_applique', { equipe: vainqueur.libelle })}
+          </p>
+          <button onClick={onRetirer} disabled={enAttente}
+                  className="mt-3 flex items-center gap-2 text-sm text-texte-faible hover:text-danger transition-colors disabled:opacity-50">
+            <RotateCcw size={14} />
+            {t('animation.retirer_departage')}
+          </button>
+        </>
+      ) : (
+        <>
+          <p className="mt-1 text-xs text-texte-doux leading-relaxed">{t('animation.aide_barrage')}</p>
+          <p className="mt-3 text-sm text-texte-doux">{t('animation.designer_vainqueur')}</p>
+          <div className="mt-2 grid gap-2">
+            {enBarrage.map((c) => (
+              <button key={c.equipe_id} onClick={() => onTrancher(c.equipe_id)} disabled={enAttente}
+                      className="flex items-center justify-between rounded-xl bg-surface border border-bord px-4 py-3 text-left tape hover:border-neon disabled:opacity-50">
+                <span className="font-medium">{c.libelle}</span>
+                <span className="text-texte-faible tabular-nums">{c.points}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+/**
  * Marque une egalite au classement : « barrage » quand elle a ete tranchee a la
  * main, « ex aequo » quand elle tient encore par la rapidite. Discret : c'est
  * une information, pas une alarme.
  */
-function BadgeEgalite({ ligne }) {
+export function BadgeEgalite({ ligne }) {
   const { t } = useTranslation()
 
   if (ligne.departage) {

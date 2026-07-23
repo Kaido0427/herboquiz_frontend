@@ -35,7 +35,9 @@ export default function PublicPage() {
 
   const r = data.reglages
   const devise = r['prix.devise'] ?? ''
-  const montant = (v) => `${Number(v ?? 0).toLocaleString('fr-FR')} ${devise}`
+  // Montant et devise separes : sur un ecran de 320 px, chaque carte du podium
+  // fait environ 90 px et « 10 000 FCFA » d'un seul tenant deborde.
+  const montant = (v) => Number(v ?? 0).toLocaleString('fr-FR')
   const podium = data.classement.slice(0, 3)
   const suite = data.classement.slice(3)
   const enDirect = data.manches.some((m) => m.statut === 'en_cours')
@@ -81,7 +83,7 @@ export default function PublicPage() {
                   className={cn('carte flex flex-col items-center px-2 text-center', hauteurs[rang],
                     rang === 0 && 'halo-or')}>
                   <Medal size={rang === 0 ? 26 : 20} className={couleurs[rang]} />
-                  <p className="mt-2 text-sm font-medium truncate w-full">{e.libelle}</p>
+                  <p className="mt-2 text-xs sm:text-sm font-medium truncate w-full">{e.libelle}</p>
                   <p className={cn('titre mt-1 font-bold tabular-nums', rang === 0 ? 'text-2xl text-or' : 'text-xl text-texte-doux')}>
                     {e.points}
                   </p>
@@ -120,9 +122,12 @@ export default function PublicPage() {
             [t('public.deuxieme'), r['prix.deuxieme'], 'text-argent', ''],
             [t('public.troisieme'), r['prix.troisieme'], 'text-bronze', ''],
           ].map(([rang, valeur, couleur, halo]) => (
-            <div key={rang} className={cn('carte px-3 py-4 text-center', halo)}>
+            <div key={rang} className={cn('carte px-2 sm:px-3 py-4 text-center', halo)}>
               <p className="etiquette text-texte-faible">{rang}</p>
-              <p className={cn('titre mt-1.5 text-lg font-bold', couleur)}>{montant(valeur)}</p>
+              <p className={cn('titre mt-1.5 text-base sm:text-xl font-bold leading-none', couleur)}>
+                {montant(valeur)}
+              </p>
+              <p className="mt-1 text-[10px] sm:text-xs text-texte-faible">{devise}</p>
             </div>
           ))}
         </div>

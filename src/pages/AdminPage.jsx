@@ -4,11 +4,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Users, UsersRound, LayoutGrid, Settings, KeyRound, Trash2, Plus,
   RefreshCw, LogOut, Check, ChevronRight, Menu, X, ShieldCheck, Wand2,
-  Swords, HelpCircle,
+  Swords, HelpCircle, Trophy, ArrowRight,
 } from 'lucide-react'
 import {
   participantService, equipeService, reglageService,
-  simulationService, accesService,
+  simulationService, accesService, phaseService,
 } from '@/services/herboquizService'
 import { QUERY_KEYS } from '@/hooks/queryKeys'
 import { useSession } from '@/contexts/SessionContext'
@@ -382,6 +382,8 @@ function VueSimulation() {
     <div>
       <EnTete titre={t('admin.onglet_simulation')} aide={t('admin.aide_simulation')} />
 
+      <BlocTours />
+
       <div className="carte p-5 mb-6">
         <label className="block text-sm font-medium mb-1.5">{t('admin.effectif')}</label>
         <div className="flex gap-3">
@@ -425,6 +427,67 @@ function VueSimulation() {
             </button>
           </div>
         </div>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Enchainement des tours.
+ *
+ * Le bouton n'est actif que lorsque le tour precedent est reellement termine :
+ * generer un tour a partir de classements incomplets produirait de mauvaises
+ * affiches, et c'est irrattrapable une fois annonce au groupe.
+ */
+function BlocTours() {
+  const { t } = useTranslation()
+  const qc = useQueryClient()
+  const { data: etat } = useQuery({ queryKey: QUERY_KEYS.phases, queryFn: phaseService.etat })
+
+  const generer = useMutation({
+    mutationFn: phaseService.generer,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.phases })
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.manches })
+    },
+  })
+
+  if (!etat) return null
+
+  const raison = etat.nb_poules === 0 ? t('admin.pas_de_poules')
+    : !etat.poules_terminees && etat.duels_existants === 0 ? t('admin.poules_en_cours')
+    : !etat.peut_generer && etat.duels_existants > 0 && !etat.dernier_tour_fini ? t('admin.tour_en_cours')
+    : !etat.peut_generer ? t('admin.tournoi_fini')
+    : null
+
+  return (
+    <div className={cn('carte p-5 mb-6', etat.peut_generer && 'halo')}>
+      <div className="flex items-center gap-2 mb-1">
+        <Trophy size={15} className="text-neon-sourd" />
+        <p className="font-medium">{t('admin.tour_suivant')}</p>
+      </div>
+      <p className="text-xs text-texte-faible mb-4 leading-relaxed">{t('admin.aide_tours')}</p>
+
+      {etat.tours.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5 mb-4">
+          {etat.tours.map((tour) => (
+            <span key={tour.ordre}
+              className={cn('rounded-lg border px-2.5 py-1 text-xs',
+                tour.termine ? 'border-succes/40 text-succes' : 'border-bord text-texte-doux')}>
+              {tour.nom} · {tour.matchs}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {etat.peut_generer ? (
+        <button onClick={() => generer.mutate()} disabled={generer.isPending}
+          className="w-full flex items-center justify-center gap-2 rounded-xl bg-neon text-fond font-semibold py-3 tape disabled:opacity-50">
+          {etat.prochain_tour}
+          <ArrowRight size={16} />
+        </button>
+      ) : (
+        <p className="text-sm text-texte-doux">{raison}</p>
       )}
     </div>
   )

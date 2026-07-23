@@ -61,3 +61,8 @@ export const accesService = {
   regenerer: (id) => api.post(`/acces/${id}/regenerer`).then((r) => r.data),
   sessions: () => api.get('/acces/sessions').then((r) => r.data),
 }
+
+export const phaseService = {
+  etat: () => api.get('/phases/etat').then((r) => r.data),
+  generer: () => api.post('/phases/generer').then((r) => r.data),
+}

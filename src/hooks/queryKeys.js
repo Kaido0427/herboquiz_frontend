@@ -9,5 +9,6 @@ export const QUERY_KEYS = {
   equipes: ['equipes'],
   questions: (mancheId) => ['questions', mancheId],
   reglages: ['reglages'],
+  phases: ['phases'],
   acces: ['acces'],
 }

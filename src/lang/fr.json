@@ -251,7 +251,9 @@
   "nav": {
     "accueil": "Accueil",
     "animation": "Animer",
-    "admin": "Administration"
+    "admin": "Administration",
+    "vers_animation": "Mode animateur",
+    "vers_admin": "Retour admin"
   },
   "editeur": {
     "gras": "Gras",

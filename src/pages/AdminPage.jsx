@@ -105,6 +105,15 @@ export default function AdminPage() {
         <p className="hidden sm:block text-sm text-texte-doux">{courante?.libelle}</p>
 
         <div className="ml-auto flex items-center gap-3">
+          {/* Un admin anime aussi les manches (les routes d'animation sont
+              ouvertes a tout compte connecte, pas reservees). Ce raccourci lui
+              evite de se deconnecter pour rejoindre l'ecran animateur en plein
+              direct, quand le groupe attend. */}
+          <Link to="/animation" title={t('nav.vers_animation')}
+                className="flex items-center gap-1.5 rounded-lg border border-neon-sourd text-neon px-2.5 py-1.5 text-xs tape hover:bg-neon/10 transition-colors">
+            <MessageCircle size={14} />
+            <span className="hidden sm:inline">{t('nav.vers_animation')}</span>
+          </Link>
           {/* Aller voir la page publique ne doit pas obliger a se deconnecter. */}
           <Link to="/" title={t('admin.voir_annonce')}
                 className="text-texte-faible hover:text-neon transition-colors">

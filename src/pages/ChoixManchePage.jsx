@@ -2,14 +2,14 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useSession } from '@/contexts/SessionContext'
 import { useQuery } from '@tanstack/react-query'
-import { Play, FileText, LogOut } from 'lucide-react'
+import { Play, FileText, LogOut, ShieldCheck } from 'lucide-react'
 import { mancheService } from '@/services/herboquizService'
 import { QUERY_KEYS } from '@/hooks/queryKeys'
 
 /** L'animateur choisit la manche qu'il va tenir. */
 export default function ChoixManchePage() {
   const { t } = useTranslation()
-  const { deconnexion } = useSession()
+  const { deconnexion, estAdmin } = useSession()
   const { data: manches = [], isLoading } = useQuery({
     queryKey: QUERY_KEYS.manches,
     queryFn: mancheService.liste,
@@ -21,6 +21,14 @@ export default function ChoixManchePage() {
     <div className="p-4">
       <div className="flex items-center gap-3 mb-5">
         <h1 className="titre text-2xl font-bold flex-1">{t('animation.choisir_manche')}</h1>
+        {/* Reserve a l'admin : un animateur n'a pas d'espace admin ou revenir. */}
+        {estAdmin && (
+          <Link to="/admin" title={t('nav.vers_admin')}
+                className="flex items-center gap-1.5 rounded-lg border border-neon-sourd text-neon px-2.5 py-1.5 text-xs tape hover:bg-neon/10 transition-colors">
+            <ShieldCheck size={14} />
+            <span className="hidden sm:inline">{t('nav.vers_admin')}</span>
+          </Link>
+        )}
         <button onClick={deconnexion} className="text-texte-faible hover:text-danger transition-colors">
           <LogOut size={16} />
         </button>

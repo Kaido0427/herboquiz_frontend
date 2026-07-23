@@ -192,7 +192,20 @@
     "date_prevue": "Date et heure",
     "aide_date": "Proposée automatiquement pour les tours générés, modifiable à tout moment.",
     "date_enregistree": "Date enregistrée",
-    "sans_date": "Sans date"
+    "sans_date": "Sans date",
+    "chaine": "Préparation",
+    "chaine_inscrits": "inscrits",
+    "chaine_equipes": "équipes",
+    "chaine_poules": "poules",
+    "chaine_manches": "manches",
+    "alerte_inscrits_sans_equipe": "{{nombre}} inscrit(s) ne sont dans aucune équipe — ils ne joueront pas.",
+    "alerte_non_confirmes": "{{nombre}} inscrit(s) non confirmés ne comptent pas dans le format.",
+    "alerte_equipes_sans_poule": "{{nombre}} équipe(s) ne sont rattachées à aucune poule.",
+    "etape_ajouter_participants": "Commencez par ajouter des participants.",
+    "etape_constituer_equipes": "Constituez les équipes depuis les inscrits confirmés.",
+    "etape_reconstituer_equipes": "Reconstituez les équipes pour inclure les nouveaux inscrits.",
+    "etape_appliquer_format": "Appliquez un format pour créer les poules et les manches.",
+    "etape_preparer_questions": "Préparez les questions de chaque manche."
   },
   "nav": {
     "accueil": "Accueil",

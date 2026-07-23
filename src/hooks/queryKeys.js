@@ -10,5 +10,6 @@ export const QUERY_KEYS = {
   questions: (mancheId) => ['questions', mancheId],
   reglages: ['reglages'],
   phases: ['phases'],
+  preparation: ['preparation'],
   acces: ['acces'],
 }

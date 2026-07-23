@@ -13,6 +13,7 @@ import {
 import { QUERY_KEYS } from '@/hooks/queryKeys'
 import { useSession } from '@/contexts/SessionContext'
 import EditeurTexte from '@/components/EditeurTexte'
+import EtatChaine from '@/components/EtatChaine'
 import VueManches from '@/pages/admin/VueManches'
 import VueQuestions from '@/pages/admin/VueQuestions'
 import { cn } from '@/utils/cn'
@@ -256,6 +257,7 @@ function VueParticipants() {
     <div>
       <EnTete titre={`${t('admin.onglet_participants')} (${confirmes}/${liste.length})`}
               aide={t('admin.aide_confirme')} />
+      <EtatChaine />
 
       <form onSubmit={(e) => { e.preventDefault(); creer.mutate() }} className="carte p-5 mb-6 grid gap-4 sm:grid-cols-2">
         <Champ libelle={t('admin.nom')} requis valeur={form.nom} onChange={(v) => setForm({ ...form, nom: v })} />
@@ -331,6 +333,7 @@ function VueEquipes() {
   return (
     <div>
       <EnTete titre={`${t('admin.onglet_equipes')} (${liste.length})`} />
+      <EtatChaine />
 
       <div className="carte p-5 mb-6">
         <p className="font-medium mb-1">{t('admin.generer_equipes')}</p>
@@ -381,6 +384,7 @@ function VueSimulation() {
   return (
     <div>
       <EnTete titre={t('admin.onglet_simulation')} aide={t('admin.aide_simulation')} />
+      <EtatChaine />
 
       <BlocTours />
 

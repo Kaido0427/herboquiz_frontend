@@ -71,3 +71,7 @@ export const inscriptionService = {
   verifier: (nom, prenom) => api.post('/inscription/verifier', { nom, prenom }).then((r) => r.data),
   inscrire: (donnees) => api.post('/inscription', donnees).then((r) => r.data),
 }
+
+export const preparationService = {
+  etat: () => api.get('/preparation').then((r) => r.data),
+}

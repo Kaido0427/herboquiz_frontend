@@ -87,7 +87,15 @@
     "classement_final": "Classement final",
     "retour_manches": "Revenir aux manches",
     "rouvrir": "Rouvrir la manche",
-    "aide_terminee": "Les scores sont figés et publiés. Vous pouvez la rouvrir si elle a été close par erreur."
+    "aide_terminee": "Les scores sont figés et publiés. Vous pouvez la rouvrir si elle a été close par erreur.",
+    "ex_aequo": "ex æquo",
+    "badge_barrage": "barrage",
+    "egalite_parfaite": "Égalité parfaite",
+    "aide_barrage": "Même total, même rapidité : la règle ne départage plus. Pose une question de barrage dans le groupe, puis désigne le gagnant.",
+    "designer_vainqueur": "Désigne le vainqueur du barrage",
+    "departage_applique": "Départage : {{equipe}} l'emporte",
+    "changer_departage": "Changer le vainqueur",
+    "retirer_departage": "Retirer le départage"
   },
   "admin": {
     "titre": "Administration",

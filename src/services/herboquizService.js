@@ -17,6 +17,9 @@ export const animationService = {
   annuler: (mancheId) => api.post(`/manches/${mancheId}/annuler`).then((r) => r.data),
   terminer: (mancheId) => api.post(`/manches/${mancheId}/terminer`).then((r) => r.data),
   rouvrir: (mancheId) => api.post(`/manches/${mancheId}/rouvrir`).then((r) => r.data),
+  // equipeId null retire le barrage.
+  barrage: (mancheId, equipeId) =>
+    api.post(`/manches/${mancheId}/barrage`, { equipe_id: equipeId }).then((r) => r.data),
 }
 
 export const mancheService = {

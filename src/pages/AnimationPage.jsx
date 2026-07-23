@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Copy, Check, Undo2, Flag, ChevronLeft, Trophy, MinusCircle, Medal, RotateCcw } from 'lucide-react'
+import { Copy, Check, Undo2, Flag, ChevronLeft, Trophy, MinusCircle, Medal, RotateCcw, Scale } from 'lucide-react'
 import { animationService } from '@/services/herboquizService'
 import { QUERY_KEYS } from '@/hooks/queryKeys'
 import { cn } from '@/utils/cn'
@@ -82,6 +82,12 @@ export default function AnimationPage() {
     onSuccess: rafraichir,
   })
 
+  // Trancher (ou retirer, avec null) un barrage d'egalite parfaite.
+  const barrage = useMutation({
+    mutationFn: (equipeId) => animationService.barrage(mancheId, equipeId),
+    onSuccess: rafraichir,
+  })
+
   const copierQuestion = async () => {
     if (!data?.question) return
     await navigator.clipboard.writeText(data.question.texte)
@@ -96,6 +102,52 @@ export default function AnimationPage() {
   const { manche, question, equipes, classement } = data
   const scores = Object.fromEntries(classement.map((c) => [c.equipe_id, c.points]))
   const enCours = attribuer.isPending || annuler.isPending || transition
+
+  // Egalite parfaite : meme total ET meme rapidite. `enBarrage` = les equipes a
+  // departager tant que rien n'a tranche ; une fois tranchee, le vainqueur
+  // porte `departage`.
+  const enBarrage = classement.filter((c) => c.barrage_requis)
+  const vainqueurBarrage = classement.find((c) => c.departage)
+
+  const PanneauBarrage = () => {
+    if (enBarrage.length < 2 && !vainqueurBarrage) return null
+
+    return (
+      <div className="mt-6 rounded-2xl border border-alerte/50 bg-alerte/10 p-4 anim-monte">
+        <div className="flex items-center gap-2">
+          <Scale size={16} className="text-alerte shrink-0" />
+          <p className="text-sm font-semibold text-alerte">{t('animation.egalite_parfaite')}</p>
+        </div>
+
+        {vainqueurBarrage ? (
+          <>
+            <p className="mt-2 text-sm text-texte-doux">
+              {t('animation.departage_applique', { equipe: vainqueurBarrage.libelle })}
+            </p>
+            <button onClick={() => barrage.mutate(null)} disabled={barrage.isPending}
+                    className="mt-3 flex items-center gap-2 text-sm text-texte-faible hover:text-danger transition-colors disabled:opacity-50">
+              <RotateCcw size={14} />
+              {t('animation.retirer_departage')}
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="mt-1 text-xs text-texte-doux leading-relaxed">{t('animation.aide_barrage')}</p>
+            <p className="mt-3 text-sm text-texte-doux">{t('animation.designer_vainqueur')}</p>
+            <div className="mt-2 grid gap-2">
+              {enBarrage.map((c) => (
+                <button key={c.equipe_id} onClick={() => barrage.mutate(c.equipe_id)} disabled={barrage.isPending}
+                        className="flex items-center justify-between rounded-xl bg-surface border border-bord px-4 py-3 text-left tape hover:border-neon disabled:opacity-50">
+                  <span className="font-medium">{c.libelle}</span>
+                  <span className="text-texte-faible tabular-nums">{c.points}</span>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen pb-8">
@@ -156,19 +208,24 @@ export default function AnimationPage() {
 
           <p className="etiquette text-texte-faible mt-6 mb-2">{t('animation.classement_final')}</p>
           <ol className="carte divide-y divide-bord cascade">
-            {classement.map((c, i) => (
+            {classement.map((c) => (
               <li key={c.equipe_id} className="flex items-center gap-3 px-4 py-3">
                 <span className={cn('w-6 text-center tabular-nums',
-                  i === 0 ? 'text-or' : i === 1 ? 'text-argent' : i === 2 ? 'text-bronze' : 'text-texte-faible')}>
-                  {i + 1}
+                  c.rang === 1 ? 'text-or' : c.rang === 2 ? 'text-argent' : c.rang === 3 ? 'text-bronze' : 'text-texte-faible')}>
+                  {c.rang}
                 </span>
-                <span className="flex-1 truncate">{c.libelle}</span>
-                <span className={cn('font-bold tabular-nums', i === 0 ? 'text-or' : 'text-texte-doux')}>
+                <span className="flex-1 min-w-0 flex items-center gap-2">
+                  <span className="truncate">{c.libelle}</span>
+                  <BadgeEgalite ligne={c} />
+                </span>
+                <span className={cn('font-bold tabular-nums', c.rang === 1 ? 'text-or' : 'text-texte-doux')}>
                   {c.points}
                 </span>
               </li>
             ))}
           </ol>
+
+          <PanneauBarrage />
 
           <p className="mt-4 text-xs text-texte-faible leading-relaxed">{t('animation.aide_terminee')}</p>
 
@@ -263,13 +320,18 @@ export default function AnimationPage() {
           </button>
         </div>
 
+        <PanneauBarrage />
+
         <p className="mt-8 mb-2 text-sm text-texte-doux">{t('animation.classement')}</p>
         <ol className="rounded-2xl bg-surface border border-bord divide-y divide-bord">
-          {classement.map((c, i) => (
+          {classement.map((c) => (
             <li key={c.equipe_id} className="flex items-center gap-3 px-4 py-3">
-              <span className="w-6 text-texte-faible tabular-nums">{i + 1}</span>
-              <span className="flex-1 truncate">{c.libelle}</span>
-              <span className={cn('font-bold tabular-nums', i === 0 ? 'text-neon' : 'text-texte-doux')}>
+              <span className="w-6 text-texte-faible tabular-nums">{c.rang}</span>
+              <span className="flex-1 min-w-0 flex items-center gap-2">
+                <span className="truncate">{c.libelle}</span>
+                <BadgeEgalite ligne={c} />
+              </span>
+              <span className={cn('font-bold tabular-nums', c.rang === 1 ? 'text-neon' : 'text-texte-doux')}>
                 {c.points}
               </span>
             </li>
@@ -278,4 +340,25 @@ export default function AnimationPage() {
       </section>
     </div>
   )
+}
+
+/**
+ * Marque une egalite au classement : « barrage » quand elle a ete tranchee a la
+ * main, « ex aequo » quand elle tient encore par la rapidite. Discret : c'est
+ * une information, pas une alarme.
+ */
+function BadgeEgalite({ ligne }) {
+  const { t } = useTranslation()
+
+  if (ligne.departage) {
+    return (
+      <span className="shrink-0 rounded bg-alerte/15 text-alerte text-[10px] px-1.5 py-0.5">
+        {t('animation.badge_barrage')}
+      </span>
+    )
+  }
+  if (ligne.ex_aequo) {
+    return <span className="shrink-0 text-[10px] text-texte-faible italic">{t('animation.ex_aequo')}</span>
+  }
+  return null
 }

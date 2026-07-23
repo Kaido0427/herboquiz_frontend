@@ -81,7 +81,13 @@
     "aide_preparer": "Importez les questions de la manche que vous allez animer.",
     "a_marque": "a marqué",
     "aucun_point": "Aucun point sur cette question",
-    "question_suivante": "Question suivante…"
+    "question_suivante": "Question suivante…",
+    "manche_terminee": "Manche terminée",
+    "vainqueur": "Vainqueur",
+    "classement_final": "Classement final",
+    "retour_manches": "Revenir aux manches",
+    "rouvrir": "Rouvrir la manche",
+    "aide_terminee": "Les scores sont figés et publiés. Vous pouvez la rouvrir si elle a été close par erreur."
   },
   "admin": {
     "titre": "Administration",

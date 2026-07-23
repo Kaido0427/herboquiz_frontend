@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Copy, Check, Undo2, Flag, ChevronLeft, Trophy, MinusCircle } from 'lucide-react'
+import { Copy, Check, Undo2, Flag, ChevronLeft, Trophy, MinusCircle, Medal, RotateCcw } from 'lucide-react'
 import { animationService } from '@/services/herboquizService'
 import { QUERY_KEYS } from '@/hooks/queryKeys'
 import { cn } from '@/utils/cn'
@@ -77,6 +77,11 @@ export default function AnimationPage() {
     onSuccess: rafraichir,
   })
 
+  const rouvrir = useMutation({
+    mutationFn: () => animationService.rouvrir(mancheId),
+    onSuccess: rafraichir,
+  })
+
   const copierQuestion = async () => {
     if (!data?.question) return
     await navigator.clipboard.writeText(data.question.texte)
@@ -131,7 +136,55 @@ export default function AnimationPage() {
         </div>
       )}
 
-      {question ? (
+      {/* Manche close : l'ecran doit LE DIRE. Avant, cliquer sur « terminer »
+          ne changeait rien a l'affichage — on croyait que le bouton etait
+          casse alors que le statut avait bien bascule. */}
+      {manche.statut === 'terminee' ? (
+        <section className="px-4 pt-8 anim-monte">
+          <div className="carte p-6 text-center halo">
+            <Medal size={30} className="mx-auto text-or" />
+            <p className="etiquette mt-3 text-texte-faible">{t('animation.manche_terminee')}</p>
+            {classement[0] && (
+              <>
+                <p className="titre mt-2 text-2xl font-bold text-or truncate">{classement[0].libelle}</p>
+                <p className="text-sm text-texte-doux">
+                  {t('animation.vainqueur')} — {classement[0].points} pts
+                </p>
+              </>
+            )}
+          </div>
+
+          <p className="etiquette text-texte-faible mt-6 mb-2">{t('animation.classement_final')}</p>
+          <ol className="carte divide-y divide-bord cascade">
+            {classement.map((c, i) => (
+              <li key={c.equipe_id} className="flex items-center gap-3 px-4 py-3">
+                <span className={cn('w-6 text-center tabular-nums',
+                  i === 0 ? 'text-or' : i === 1 ? 'text-argent' : i === 2 ? 'text-bronze' : 'text-texte-faible')}>
+                  {i + 1}
+                </span>
+                <span className="flex-1 truncate">{c.libelle}</span>
+                <span className={cn('font-bold tabular-nums', i === 0 ? 'text-or' : 'text-texte-doux')}>
+                  {c.points}
+                </span>
+              </li>
+            ))}
+          </ol>
+
+          <p className="mt-4 text-xs text-texte-faible leading-relaxed">{t('animation.aide_terminee')}</p>
+
+          <div className="mt-4 flex gap-2">
+            <Link to="/animation"
+                  className="flex-1 rounded-xl bg-neon text-fond font-semibold py-3 text-center tape">
+              {t('animation.retour_manches')}
+            </Link>
+            <button onClick={() => rouvrir.mutate()} disabled={rouvrir.isPending}
+                    className="flex items-center gap-2 rounded-xl border border-bord px-4 text-texte-doux tape disabled:opacity-50">
+              <RotateCcw size={15} />
+              {t('animation.rouvrir')}
+            </button>
+          </div>
+        </section>
+      ) : question ? (
         <section className={cn('px-4 pt-5', transition ? 'anim-sort-gauche' : 'anim-entre-droite')}
                  key={manche.question_courante}>
           {/* La question, et le bouton qui evite de la retaper dans Messenger.

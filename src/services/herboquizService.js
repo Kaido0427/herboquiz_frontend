@@ -16,6 +16,7 @@ export const animationService = {
   attribuer: (mancheId, payload) => api.post(`/manches/${mancheId}/point`, payload).then((r) => r.data),
   annuler: (mancheId) => api.post(`/manches/${mancheId}/annuler`).then((r) => r.data),
   terminer: (mancheId) => api.post(`/manches/${mancheId}/terminer`).then((r) => r.data),
+  rouvrir: (mancheId) => api.post(`/manches/${mancheId}/rouvrir`).then((r) => r.data),
 }
 
 export const mancheService = {

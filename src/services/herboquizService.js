@@ -66,3 +66,8 @@ export const phaseService = {
   etat: () => api.get('/phases/etat').then((r) => r.data),
   generer: () => api.post('/phases/generer').then((r) => r.data),
 }
+
+export const inscriptionService = {
+  verifier: (nom, prenom) => api.post('/inscription/verifier', { nom, prenom }).then((r) => r.data),
+  inscrire: (donnees) => api.post('/inscription', donnees).then((r) => r.data),
+}

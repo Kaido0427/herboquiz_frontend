@@ -142,6 +142,14 @@ export default function PublicPage() {
           <TitreSection icone={Users} libelle={t('public.comment_sinscrire')} />
           <div className="carte p-5 halo">
             <Apercu texte={r['inscriptions.comment'] ?? ''} />
+            {/* Le lien doit etre le geste evident de la page : c'est ce qu'on
+                attend des visiteurs avant le coup d'envoi. */}
+            <Link to="/inscription"
+                  className="mt-4 w-full flex items-center justify-center gap-2 rounded-xl bg-neon text-fond font-semibold py-3.5 halo tape">
+              <Users size={17} />
+              {t('public.s_inscrire')}
+            </Link>
+
             {r['inscriptions.date_limite'] && (
               <p className="mt-4 pt-4 border-t border-bord text-sm">
                 <span className="etiquette text-texte-faible">{t('public.date_limite')}</span>

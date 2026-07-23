@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useSession } from '@/contexts/SessionContext'
 import PublicPage from '@/pages/PublicPage'
 import ConnexionPage from '@/pages/ConnexionPage'
+import InscriptionPage from '@/pages/InscriptionPage'
 import ChoixManchePage from '@/pages/ChoixManchePage'
 import AnimationPage from '@/pages/AnimationPage'
 import AdminPage from '@/pages/AdminPage'
@@ -25,6 +26,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<PublicPage />} />
       <Route path="/connexion" element={<ConnexionPage />} />
+      <Route path="/inscription" element={<InscriptionPage />} />
       <Route path="/animation" element={<Protege><ChoixManchePage /></Protege>} />
       <Route path="/animation/:mancheId" element={<Protege><AnimationPage /></Protege>} />
       <Route path="/admin" element={<Protege adminSeul><AdminPage /></Protege>} />

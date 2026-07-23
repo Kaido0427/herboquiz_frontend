@@ -53,7 +53,8 @@
     "jours": "j",
     "heures": "h",
     "minutes": "min",
-    "avant_le_debut": "avant le coup d'envoi"
+    "avant_le_debut": "avant le coup d'envoi",
+    "s_inscrire": "S'inscrire au tournoi"
   },
   "animation": {
     "titre": "Animation",
@@ -208,5 +209,24 @@
     "apercu": "Aperçu",
     "editer": "Éditer",
     "exemple": "votre texte"
+  },
+  "inscription": {
+    "titre": "Inscription",
+    "sous_titre": "Entrez votre nom pour commencer",
+    "nom": "Nom",
+    "prenom": "Prénom",
+    "email": "Adresse e-mail",
+    "telephone": "Numéro de téléphone",
+    "pseudo": "Pseudo dans le groupe",
+    "aide_pseudo": "C'est ce nom que l'animateur reconnaîtra pendant les matchs.",
+    "lien_fb": "Lien de votre profil Facebook",
+    "continuer": "Continuer",
+    "valider": "Je m'inscris",
+    "reconnu": "Bonjour {{nom}}, vous êtes déjà dans la liste.",
+    "completez": "Il ne reste qu'à compléter vos informations.",
+    "merci": "C'est fait",
+    "retour_accueil": "Retour à l'accueil",
+    "fermees": "Les inscriptions sont closes.",
+    "s_inscrire": "S'inscrire au tournoi"
   }
 }

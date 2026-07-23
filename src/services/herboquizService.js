@@ -42,7 +42,9 @@ export const equipeService = {
 export const questionService = {
   liste: (mancheId) => api.get('/questions', { params: { manche_id: mancheId } }).then((r) => r.data),
   creerLot: (mancheId, questions) =>
-    api.post('/questions/lot', { manche_id: mancheId, questions }).then((r) => r.data),
+    api.post('/questions/lot', { manche_id: mancheId || null, questions }).then((r) => r.data),
+  affecter: (mancheId, questions) =>
+    api.post('/questions/affecter', { manche_id: mancheId, questions }).then((r) => r.data),
   supprimer: (id) => api.delete(`/questions/${id}`).then((r) => r.data),
 }
 

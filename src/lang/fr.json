@@ -205,7 +205,19 @@
     "etape_constituer_equipes": "Constituez les équipes depuis les inscrits confirmés.",
     "etape_reconstituer_equipes": "Reconstituez les équipes pour inclure les nouveaux inscrits.",
     "etape_appliquer_format": "Appliquez un format pour créer les poules et les manches.",
-    "etape_preparer_questions": "Préparez les questions de chaque manche."
+    "etape_preparer_questions": "Préparez les questions de chaque manche.",
+    "banque": "Banque générale (non rattachées)",
+    "aide_banque": "Préparez toutes vos questions ici, même avant que les manches existent. Vous les rattacherez ensuite.",
+    "propose_par": "proposé par",
+    "affecter_a": "Rattacher à une manche",
+    "affecter": "Rattacher",
+    "selection": "sélectionnée(s)",
+    "aucune_manche_dispo": "Créez d'abord une manche pour pouvoir y rattacher des questions.",
+    "contacter_whatsapp": "Écrire sur WhatsApp",
+    "contacter_facebook": "Ouvrir le profil Facebook",
+    "sans_contact": "Aucun moyen de contact fourni",
+    "email_participant": "Adresse e-mail",
+    "lien_fb_participant": "Lien Facebook"
   },
   "nav": {
     "accueil": "Accueil",

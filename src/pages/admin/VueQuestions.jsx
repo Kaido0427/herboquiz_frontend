@@ -19,7 +19,9 @@ const CHAMP = 'w-full rounded-xl bg-fond-2 border border-bord px-3 py-2.5 outlin
 export default function VueQuestions() {
   const { t } = useTranslation()
   const qc = useQueryClient()
-  const [mancheId, setMancheId] = useState('')
+  const [mancheId, setMancheId] = useState('banque')
+  const [selection, setSelection] = useState([])
+  const [cible, setCible] = useState('')
   const [ligne, setLigne] = useState({ texte: '', reponse: '' })
   const [lot, setLot] = useState('')
   const [modeLot, setModeLot] = useState(false)
@@ -56,6 +58,11 @@ export default function VueQuestions() {
 
   const supprimer = useMutation({ mutationFn: questionService.supprimer, onSuccess: rafraichir })
 
+  const affecter = useMutation({
+    mutationFn: () => questionService.affecter(cible, selection),
+    onSuccess: () => { setSelection([]); setCible(''); rafraichir() },
+  })
+
   const valides = analyserLot().length
 
   return (
@@ -67,15 +74,16 @@ export default function VueQuestions() {
 
       <div className="carte p-5 mb-6">
         <label className="block text-sm font-medium mb-1.5">{t('admin.choisir_manche_questions')}</label>
-        <select value={mancheId} onChange={(e) => setMancheId(e.target.value)} className={CHAMP}>
-          <option value="">{t('admin.selectionner')}</option>
+        <select value={mancheId} onChange={(e) => { setMancheId(e.target.value); setSelection([]) }} className={CHAMP}>
+          <option value="banque">{t('admin.banque')}</option>
           {manches.map((m) => (
             <option key={m.id} value={m.id}>{m.libelle}</option>
           ))}
         </select>
+        <p className="mt-1.5 text-xs text-texte-faible">{t('admin.aide_banque')}</p>
       </div>
 
-      {mancheId && (
+      {(
         <>
           <div className="flex gap-2 mb-4">
             <button onClick={() => setModeLot(false)}
@@ -126,6 +134,31 @@ export default function VueQuestions() {
             {questions.length} {t('admin.questions_prep')}
           </p>
 
+          {/* Rattachement depuis la banque : c'est le moment ou l'on decide
+              quelles questions partent dans quelle manche. */}
+          {mancheId === 'banque' && selection.length > 0 && (
+            <div className="carte p-4 mb-3 halo">
+              <p className="text-sm mb-2">
+                <strong className="text-neon">{selection.length}</strong> {t('admin.selection')}
+              </p>
+              {manches.length === 0 ? (
+                <p className="text-xs text-alerte">{t('admin.aucune_manche_dispo')}</p>
+              ) : (
+                <div className="flex gap-2">
+                  <select value={cible} onChange={(e) => setCible(e.target.value)} className={CHAMP}>
+                    <option value="">{t('admin.affecter_a')}</option>
+                    {manches.map((m) => <option key={m.id} value={m.id}>{m.libelle}</option>)}
+                  </select>
+                  <button disabled={!cible || affecter.isPending}
+                          onClick={() => affecter.mutate()}
+                          className="shrink-0 rounded-xl bg-neon text-fond font-semibold px-4 tape disabled:opacity-40">
+                    {t('admin.affecter')}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {questions.length === 0 ? (
             <p className="carte px-5 py-8 text-center text-sm text-texte-faible">{t('admin.aucune_question')}</p>
           ) : (
@@ -133,9 +166,20 @@ export default function VueQuestions() {
               {questions.map((q, i) => (
                 <li key={q.id} className="flex gap-3 px-4 py-3">
                   <span className="titre text-neon-sourd font-bold tabular-nums shrink-0">{i + 1}</span>
+                  {mancheId === 'banque' && (
+                    <input type="checkbox" className="accent-neon mt-1 shrink-0"
+                           checked={selection.includes(q.id)}
+                           onChange={() => setSelection((s) => s.includes(q.id)
+                             ? s.filter((x) => x !== q.id) : [...s, q.id])} />
+                  )}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm">{q.texte}</p>
                     <p className="text-xs text-neon-fort mt-0.5">{q.reponse}</p>
+                    {q.propose_par && (
+                      <p className="text-[10px] text-texte-faible mt-0.5">
+                        {t('admin.propose_par')} {q.propose_par}
+                      </p>
+                    )}
                   </div>
                   <button onClick={() => supprimer.mutate(q.id)} title={t('admin.supprimer_question')}
                           className="text-texte-faible hover:text-danger transition-colors shrink-0">

@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Users, UsersRound, LayoutGrid, Settings, KeyRound, Trash2, Plus,
   RefreshCw, LogOut, Check, ChevronRight, Menu, X, ShieldCheck, Wand2,
-  Swords, HelpCircle, Trophy, ArrowRight,
+  Swords, HelpCircle, Trophy, ArrowRight, MessageCircle, ExternalLink,
 } from 'lucide-react'
 import {
   participantService, equipeService, reglageService,
@@ -288,10 +288,29 @@ function VueParticipants() {
               <div className="flex-1 min-w-0">
                 <p className="truncate">{p.nom_affiche}</p>
                 <p className="text-xs text-texte-faible truncate">
-                  {p.nom_complet}{p.telephone ? ` · ${p.telephone}` : ''}
+                  {p.nom_complet}{p.telephone ? ` · ${p.telephone}` : ''}{p.email ? ` · ${p.email}` : ''}
                 </p>
               </div>
-              <button onClick={() => supprimer.mutate(p.id)} className="text-texte-faible hover:text-danger transition-colors">
+
+              {/* Contact direct depuis les informations fournies. Ouvrir le lien
+                  sert aussi de verification : un profil qui ne s'ouvre pas est a
+                  controler avant de valider l'inscription. */}
+              {p.telephone && (
+                <a href={`https://wa.me/${String(p.telephone).replace(/\D/g, '')}`}
+                   target="_blank" rel="noreferrer" title={t('admin.contacter_whatsapp')}
+                   className="text-texte-faible hover:text-succes transition-colors shrink-0">
+                  <MessageCircle size={15} />
+                </a>
+              )}
+              {p.lien_facebook && (
+                <a href={p.lien_facebook} target="_blank" rel="noreferrer"
+                   title={t('admin.contacter_facebook')}
+                   className="text-texte-faible hover:text-neon transition-colors shrink-0">
+                  <ExternalLink size={15} />
+                </a>
+              )}
+
+              <button onClick={() => supprimer.mutate(p.id)} className="text-texte-faible hover:text-danger transition-colors shrink-0">
                 <Trash2 size={15} />
               </button>
             </li>

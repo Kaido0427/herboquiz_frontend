@@ -1,14 +1,15 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Users, UsersRound, LayoutGrid, Settings, KeyRound, Trash2, Plus,
   RefreshCw, LogOut, Check, ChevronRight, Menu, X, ShieldCheck, Wand2,
-  Swords, HelpCircle, Trophy, ArrowRight, MessageCircle, ExternalLink,
+  Swords, HelpCircle, Trophy, ArrowRight, MessageCircle, ExternalLink, Eye, Copy, Check as CheckIcon,
 } from 'lucide-react'
 import {
   participantService, equipeService, reglageService,
-  simulationService, accesService, phaseService,
+  simulationService, accesService, phaseService, preparationService,
 } from '@/services/herboquizService'
 import { QUERY_KEYS } from '@/hooks/queryKeys'
 import { useSession } from '@/contexts/SessionContext'
@@ -102,6 +103,11 @@ export default function AdminPage() {
         <p className="hidden sm:block text-sm text-texte-doux">{courante?.libelle}</p>
 
         <div className="ml-auto flex items-center gap-3">
+          {/* Aller voir la page publique ne doit pas obliger a se deconnecter. */}
+          <Link to="/" title={t('admin.voir_annonce')}
+                className="text-texte-faible hover:text-neon transition-colors">
+            <Eye size={16} />
+          </Link>
           <span className="hidden sm:flex items-center gap-1.5 text-xs text-texte-faible">
             <ShieldCheck size={13} className="text-neon-sourd" />
             {utilisateur?.nom}
@@ -167,6 +173,7 @@ function VueReglages() {
   return (
     <div className="pb-24">
       <EnTete titre={t('admin.onglet_reglages')} />
+      <LienInscription />
 
       {Object.entries(groupes).map(([groupe, reglages]) => (
         <section key={groupe} className="mb-6">
@@ -219,6 +226,41 @@ function VueReglages() {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+/**
+ * Le lien a diffuser dans le groupe.
+ *
+ * Il etait accessible mais nulle part affiche : il fallait le reconstruire de
+ * tete pour le partager. Un bouton de copie evite de le retaper sur un
+ * telephone, et une faute d'adresse envoyee a tout le groupe.
+ */
+function LienInscription() {
+  const { t } = useTranslation()
+  const [copie, setCopie] = useState(false)
+  const lien = `${window.location.origin}/inscription`
+
+  const copier = async () => {
+    await navigator.clipboard.writeText(lien)
+    setCopie(true)
+    setTimeout(() => setCopie(false), 2000)
+  }
+
+  return (
+    <div className="carte p-4 mb-6 halo">
+      <p className="etiquette text-texte-faible mb-2">{t('admin.lien_inscription')}</p>
+      <div className="flex gap-2">
+        <input readOnly value={lien} onFocus={(e) => e.target.select()}
+               className="flex-1 min-w-0 rounded-xl bg-fond-2 border border-bord px-3 py-2.5 text-sm text-neon outline-none" />
+        <button type="button" onClick={copier}
+                className={cn('shrink-0 flex items-center gap-2 rounded-xl px-4 font-semibold tape',
+                  copie ? 'bg-succes text-fond' : 'bg-neon text-fond')}>
+          {copie ? <CheckIcon size={16} /> : <Copy size={16} />}
+          <span className="hidden sm:inline">{copie ? t('admin.lien_copie') : t('admin.copier_lien')}</span>
+        </button>
+      </div>
     </div>
   )
 }
@@ -388,6 +430,12 @@ function VueSimulation() {
   const [effectif, setEffectif] = useState('')
   const [resultat, setResultat] = useState(null)
 
+  // L'effectif reel est la valeur qui compte : on la pre-remplit plutot que de
+  // demander a l'administrateur de la retrouver ailleurs. Elle reste modifiable
+  // pour eprouver un autre scenario.
+  const { data: prep } = useQuery({ queryKey: QUERY_KEYS.preparation, queryFn: preparationService.etat })
+  const reel = prep?.participants_confirmes
+
   const simuler = useMutation({
     mutationFn: () => simulationService.simuler(effectif ? { effectif: Number(effectif) } : {}),
     onSuccess: setResultat,
@@ -409,8 +457,10 @@ function VueSimulation() {
 
       <div className="carte p-5 mb-6">
         <label className="block text-sm font-medium mb-1.5">{t('admin.effectif')}</label>
+        <p className="mb-2 text-xs text-texte-faible">{t('admin.effectif_auto')}</p>
         <div className="flex gap-3">
-          <input type="number" min="0" value={effectif} onChange={(e) => setEffectif(e.target.value)}
+          <input type="number" min="0" value={effectif === '' ? (reel ?? '') : effectif}
+                 onChange={(e) => setEffectif(e.target.value)}
                  className={CHAMP} placeholder="—" />
           <button onClick={() => simuler.mutate()} disabled={simuler.isPending}
                   className="shrink-0 rounded-xl bg-neon text-fond font-semibold px-5 tape disabled:opacity-50">

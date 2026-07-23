@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { Trophy, CalendarDays, Users, ScrollText, LogIn, Medal, Radio, Sparkles } from 'lucide-react'
 import { publicService } from '@/services/herboquizService'
+import { session } from '@/services/api'
 import { QUERY_KEYS } from '@/hooks/queryKeys'
 import { Apercu } from '@/components/EditeurTexte'
 import { cn } from '@/utils/cn'
@@ -38,8 +39,11 @@ export default function PublicPage() {
   // Montant et devise separes : sur un ecran de 320 px, chaque carte du podium
   // fait environ 90 px et « 10 000 FCFA » d'un seul tenant deborde.
   const montant = (v) => Number(v ?? 0).toLocaleString('fr-FR')
-  const podium = data.classement.slice(0, 3)
-  const suite = data.classement.slice(3)
+  // Un podium ou tout le monde est a zero ne veut rien dire : il laisse croire
+  // que le classement est fige alors que rien n'a encore ete joue.
+  const aDesPoints = data.classement.some((c) => c.points > 0)
+  const podium = aDesPoints ? data.classement.slice(0, 3) : []
+  const suite = aDesPoints ? data.classement.slice(3) : []
   const enDirect = data.manches.some((m) => m.statut === 'en_cours')
 
   return (
@@ -106,10 +110,10 @@ export default function PublicPage() {
         </section>
       )}
 
-      {data.classement.length === 0 && (
+      {!aDesPoints && (
         <section className="carte px-5 py-8 text-center anim-monte">
           <Sparkles size={22} className="mx-auto text-neon-sourd" />
-          <p className="mt-3 text-sm text-texte-doux">{t('public.aucun_classement')}</p>
+          <p className="mt-3 text-sm text-texte-doux">{t(data.classement.length === 0 ? 'public.aucun_classement' : 'public.podium_bientot')}</p>
         </section>
       )}
 
@@ -218,7 +222,9 @@ export default function PublicPage() {
 
       <footer className="mt-16 pt-8 border-t border-bord text-center">
         <p className="titre text-sm text-texte-faible italic">{r['textes.pied_page']}</p>
-        <Link to="/connexion"
+        {/* Si une session est deja ouverte, on repart directement dans
+            l'administration : se deconnecter pour y revenir n'avait aucun sens. */}
+        <Link to={session.jeton() ? '/admin' : '/connexion'}
               className="mt-5 inline-flex items-center gap-1.5 text-xs text-texte-faible hover:text-neon transition-colors">
           <LogIn size={13} />
           {t('nav.admin')}

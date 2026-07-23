@@ -54,7 +54,8 @@
     "heures": "h",
     "minutes": "min",
     "avant_le_debut": "avant le coup d'envoi",
-    "s_inscrire": "S'inscrire au tournoi"
+    "s_inscrire": "S'inscrire au tournoi",
+    "podium_bientot": "Le podium apparaîtra dès les premiers points."
   },
   "animation": {
     "titre": "Animation",
@@ -217,7 +218,12 @@
     "contacter_facebook": "Ouvrir le profil Facebook",
     "sans_contact": "Aucun moyen de contact fourni",
     "email_participant": "Adresse e-mail",
-    "lien_fb_participant": "Lien Facebook"
+    "lien_fb_participant": "Lien Facebook",
+    "voir_annonce": "Voir la page publique",
+    "lien_inscription": "Lien d'inscription à partager",
+    "copier_lien": "Copier le lien",
+    "lien_copie": "Lien copié",
+    "effectif_auto": "Calculé sur les inscrits confirmés. Modifiable pour tester un autre effectif."
   },
   "nav": {
     "accueil": "Accueil",

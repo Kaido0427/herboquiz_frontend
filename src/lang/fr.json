@@ -185,7 +185,9 @@
     "tour_en_cours": "Terminez le tour en cours avant de générer le suivant.",
     "tournoi_fini": "Le tournoi est allé à son terme.",
     "tours_joues": "Tours créés",
-    "pas_de_poules": "Créez d'abord les poules depuis le format."
+    "pas_de_poules": "Créez d'abord les poules depuis le format.",
+    "egalite_barrage": "Égalité parfaite à la barre de qualification",
+    "aide_barrage": "Même total et même instant : la rapidité ne départage plus. Posez une question de barrage avant d'annoncer les qualifiés."
   },
   "nav": {
     "accueil": "Accueil",

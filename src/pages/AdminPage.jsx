@@ -480,6 +480,20 @@ function BlocTours() {
         </div>
       )}
 
+      {/* Une egalite parfaite doit se voir AVANT d'annoncer les qualifies au
+          groupe : apres, c'est trop tard pour poser un barrage. */}
+      {etat.egalites_barrage?.length > 0 && (
+        <div className="mb-4 rounded-xl border border-alerte/40 bg-alerte/10 p-4">
+          <p className="text-sm font-medium text-alerte">{t('admin.egalite_barrage')}</p>
+          <p className="mt-1 text-xs text-texte-doux leading-relaxed">{t('admin.aide_barrage')}</p>
+          <ul className="mt-2 text-xs text-texte-doux">
+            {etat.egalites_barrage.map((e, i) => (
+              <li key={i}>· {e.poule} — {e.points} pts</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {etat.peut_generer ? (
         <button onClick={() => generer.mutate()} disabled={generer.isPending}
           className="w-full flex items-center justify-center gap-2 rounded-xl bg-neon text-fond font-semibold py-3 tape disabled:opacity-50">

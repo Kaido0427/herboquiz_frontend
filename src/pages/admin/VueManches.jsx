@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Trash2, Swords, Users } from 'lucide-react'
+import { Plus, Trash2, Swords, Users, CalendarClock } from 'lucide-react'
 import { mancheService, equipeService } from '@/services/herboquizService'
 import { QUERY_KEYS } from '@/hooks/queryKeys'
 import { cn } from '@/utils/cn'
@@ -19,7 +19,7 @@ const CHAMP = 'w-full rounded-xl bg-fond-2 border border-bord px-3 py-2.5 outlin
 export default function VueManches() {
   const { t } = useTranslation()
   const qc = useQueryClient()
-  const vide = { libelle: '', type: 'poule', nb_questions_prevu: 15, score_cible: 5, equipes: [] }
+  const vide = { libelle: '', type: 'poule', nb_questions_prevu: 15, score_cible: 5, date_prevue: '', equipes: [] }
   const [form, setForm] = useState(vide)
 
   const { data: manches = [] } = useQuery({ queryKey: QUERY_KEYS.manches, queryFn: mancheService.liste })
@@ -35,12 +35,26 @@ export default function VueManches() {
       // Le score cible ne concerne que les duels : l'envoyer sur une poule
       // ferait croire a une regle qui n'existe pas.
       score_cible: form.type === 'duel' ? Number(form.score_cible) : null,
+      date_prevue: form.date_prevue || null,
       equipes: form.equipes,
     }),
     onSuccess: () => { setForm(vide); rafraichir() },
   })
 
   const supprimer = useMutation({ mutationFn: mancheService.supprimer, onSuccess: rafraichir })
+
+  // Un tournoi se decale toujours un peu : la date proposee a la generation
+  // doit pouvoir etre corrigee sans recreer la manche.
+  const changerDate = useMutation({
+    mutationFn: ({ manche, date }) => mancheService.modifier(manche.id, {
+      libelle: manche.libelle,
+      type: manche.type,
+      nb_questions_prevu: manche.nb_questions_prevu,
+      score_cible: manche.score_cible,
+      date_prevue: date || null,
+    }),
+    onSuccess: rafraichir,
+  })
 
   const basculerEquipe = (id) => setForm((f) => ({
     ...f,
@@ -96,6 +110,13 @@ export default function VueManches() {
         )}
 
         <div>
+          <label className="block text-sm font-medium mb-1.5">{t('admin.date_prevue')}</label>
+          <input type="datetime-local" value={form.date_prevue}
+                 onChange={(e) => setForm({ ...form, date_prevue: e.target.value })} className={CHAMP} />
+          <p className="mt-1.5 text-xs text-texte-faible">{t('admin.aide_date')}</p>
+        </div>
+
+        <div>
           <label className="block text-sm font-medium mb-2">
             {t('admin.choisir_equipes')}
             {form.equipes.length > 0 && (
@@ -140,7 +161,15 @@ export default function VueManches() {
                   {m.type === 'duel' ? ` · ${m.score_cible} pts` : ` · ${m.nb_questions_prevu} q.`}
                 </p>
               </div>
-              <span className="etiquette text-texte-faible hidden sm:block">
+              <label className="hidden sm:flex items-center gap-1.5 text-xs text-texte-faible cursor-pointer"
+                     title={t('admin.date_prevue')}>
+                <CalendarClock size={13} />
+                <input type="datetime-local"
+                       defaultValue={m.date_prevue ? String(m.date_prevue).slice(0, 16) : ''}
+                       onChange={(e) => changerDate.mutate({ manche: m, date: e.target.value })}
+                       className="bg-transparent border border-bord rounded-lg px-2 py-1 text-xs outline-none focus:border-neon" />
+              </label>
+              <span className="etiquette text-texte-faible hidden lg:block">
                 {t(`admin.manche_${m.statut}`)}
               </span>
               <button onClick={() => supprimer.mutate(m.id)} className="text-texte-faible hover:text-danger transition-colors">

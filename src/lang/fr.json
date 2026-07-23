@@ -187,7 +187,11 @@
     "tours_joues": "Tours créés",
     "pas_de_poules": "Créez d'abord les poules depuis le format.",
     "egalite_barrage": "Égalité parfaite à la barre de qualification",
-    "aide_barrage": "Même total et même instant : la rapidité ne départage plus. Posez une question de barrage avant d'annoncer les qualifiés."
+    "aide_barrage": "Même total et même instant : la rapidité ne départage plus. Posez une question de barrage avant d'annoncer les qualifiés.",
+    "date_prevue": "Date et heure",
+    "aide_date": "Proposée automatiquement pour les tours générés, modifiable à tout moment.",
+    "date_enregistree": "Date enregistrée",
+    "sans_date": "Sans date"
   },
   "nav": {
     "accueil": "Accueil",

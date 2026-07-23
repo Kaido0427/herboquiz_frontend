@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { Trophy, CalendarDays, Users, ScrollText, LogIn, Medal, Radio, Sparkles } from 'lucide-react'
+import { Trophy, CalendarDays, Users, ScrollText, LogIn, Medal, Radio, Sparkles, Target } from 'lucide-react'
 import { publicService } from '@/services/herboquizService'
 import { session } from '@/services/api'
 import { QUERY_KEYS } from '@/hooks/queryKeys'
@@ -135,6 +135,29 @@ export default function PublicPage() {
             </div>
           ))}
         </div>
+        {/* Le meilleur marqueur : une seconde facon d'etre recompense, pour
+            celui qui repond juste sans forcement gagner ses duels. */}
+        {Number(r['prix.meilleur_marqueur']) > 0 && (
+          <div className="carte mt-3 p-4">
+            <div className="flex items-center gap-3">
+              <Target size={16} className="text-neon shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">{t('public.meilleur_marqueur')}</p>
+                {data.meilleur_marqueur ? (
+                  <p className="text-xs text-neon truncate">
+                    {data.meilleur_marqueur.libelle} — {data.meilleur_marqueur.points} pts
+                  </p>
+                ) : (
+                  <p className="text-xs text-texte-faible">{t('public.aide_marqueur')}</p>
+                )}
+              </div>
+              <span className="titre font-bold text-neon shrink-0">
+                {montant(r['prix.meilleur_marqueur'])} {devise}
+              </span>
+            </div>
+          </div>
+        )}
+
         {r['prix.versement'] && (
           <p className="mt-3 text-xs text-texte-faible text-center">{r['prix.versement']}</p>
         )}

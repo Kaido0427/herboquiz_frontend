@@ -55,7 +55,9 @@
     "minutes": "min",
     "avant_le_debut": "avant le coup d'envoi",
     "s_inscrire": "S'inscrire au tournoi",
-    "podium_bientot": "Le podium apparaîtra dès les premiers points."
+    "podium_bientot": "Le podium apparaîtra dès les premiers points.",
+    "meilleur_marqueur": "Meilleur marqueur",
+    "aide_marqueur": "Calculé sur les poules : on peut beaucoup marquer sans aller au bout du tableau."
   },
   "animation": {
     "titre": "Animation",

@@ -6,6 +6,7 @@ import {
   Users, UsersRound, LayoutGrid, Settings, KeyRound, Trash2, Plus,
   RefreshCw, LogOut, Check, ChevronRight, Menu, X, ShieldCheck, Wand2,
   Swords, HelpCircle, Trophy, ArrowRight, MessageCircle, ExternalLink, Eye, Copy, Check as CheckIcon,
+  BarChart3,
 } from 'lucide-react'
 import {
   participantService, equipeService, reglageService,

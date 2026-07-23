@@ -74,7 +74,9 @@
     "choisir_manche": "Choisir une manche",
     "aucune_manche": "Aucune manche créée.",
     "point_attribue": "Point attribué",
-    "point_annule": "Dernier point annulé"
+    "point_annule": "Dernier point annulé",
+    "preparer": "Préparer les questions",
+    "aide_preparer": "Importez les questions de la manche que vous allez animer."
   },
   "admin": {
     "titre": "Administration",

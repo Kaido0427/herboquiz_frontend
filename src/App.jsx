@@ -7,6 +7,7 @@ import InscriptionPage from '@/pages/InscriptionPage'
 import ChoixManchePage from '@/pages/ChoixManchePage'
 import AnimationPage from '@/pages/AnimationPage'
 import AdminPage from '@/pages/AdminPage'
+import VueQuestions from '@/pages/admin/VueQuestions'
 
 /** Barriere d'acces. Le vrai controle est cote serveur ; ceci evite juste
  *  d'afficher un ecran vide a quelqu'un qui n'a rien a y faire. */
@@ -29,6 +30,15 @@ export default function App() {
       <Route path="/inscription" element={<InscriptionPage />} />
       <Route path="/animation" element={<Protege><ChoixManchePage /></Protege>} />
       <Route path="/animation/:mancheId" element={<Protege><AnimationPage /></Protege>} />
+      {/* Preparer les questions fait partie du travail de l'animateur : il
+          tient la manche, il en ecrit les questions. */}
+      <Route path="/questions" element={
+        <Protege>
+          <div className="max-w-3xl mx-auto px-4 py-6">
+            <VueQuestions />
+          </div>
+        </Protege>
+      } />
       <Route path="/admin" element={<Protege adminSeul><AdminPage /></Protege>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

@@ -1,13 +1,15 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useSession } from '@/contexts/SessionContext'
 import { useQuery } from '@tanstack/react-query'
-import { Play } from 'lucide-react'
+import { Play, FileText, LogOut } from 'lucide-react'
 import { mancheService } from '@/services/herboquizService'
 import { QUERY_KEYS } from '@/hooks/queryKeys'
 
 /** L'animateur choisit la manche qu'il va tenir. */
 export default function ChoixManchePage() {
   const { t } = useTranslation()
+  const { deconnexion } = useSession()
   const { data: manches = [], isLoading } = useQuery({
     queryKey: QUERY_KEYS.manches,
     queryFn: mancheService.liste,
@@ -17,14 +19,28 @@ export default function ChoixManchePage() {
 
   return (
     <div className="p-4">
-      <h1 className="text-xl font-bold mb-4">{t('animation.choisir_manche')}</h1>
+      <div className="flex items-center gap-3 mb-5">
+        <h1 className="titre text-2xl font-bold flex-1">{t('animation.choisir_manche')}</h1>
+        <button onClick={deconnexion} className="text-texte-faible hover:text-danger transition-colors">
+          <LogOut size={16} />
+        </button>
+      </div>
+
+      <Link to="/questions"
+            className="carte flex items-center gap-3 px-4 py-3.5 mb-5 tape hover:border-neon">
+        <FileText size={17} className="text-neon-sourd shrink-0" />
+        <div className="min-w-0">
+          <p className="text-sm font-medium">{t('animation.preparer')}</p>
+          <p className="text-xs text-texte-faible">{t('animation.aide_preparer')}</p>
+        </div>
+      </Link>
       {manches.length === 0 ? (
         <p className="text-texte-doux">{t('animation.aucune_manche')}</p>
       ) : (
         <div className="grid gap-2">
           {manches.map((m) => (
             <Link key={m.id} to={`/animation/${m.id}`}
-                  className="flex items-center justify-between rounded-xl bg-surface border border-bord px-4 py-4">
+                  className="carte flex items-center justify-between px-4 py-4 tape hover:border-neon">
               <div>
                 <p className="font-medium">{m.libelle}</p>
                 <p className="text-xs text-texte-faible">{t(`admin.type_${m.type}`)} · {m.statut}</p>

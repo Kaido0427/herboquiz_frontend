@@ -338,28 +338,13 @@ function VueParticipants() {
                 </p>
               </button>
 
+              {/* Le detail (contact, parcours) vit dans la fiche : entasser
+                  quatre icones par ligne rendait la liste illisible sur
+                  telephone, et une icone absente laissait un trou. */}
               <button onClick={() => setFiche(p.id)} title={t('perf.voir_parcours')}
                       className="text-texte-faible hover:text-neon transition-colors shrink-0">
-                <BarChart3 size={15} />
+                <BarChart3 size={16} />
               </button>
-
-              {/* Contact direct depuis les informations fournies. Ouvrir le lien
-                  sert aussi de verification : un profil qui ne s'ouvre pas est a
-                  controler avant de valider l'inscription. */}
-              {p.telephone && (
-                <a href={`https://wa.me/${String(p.telephone).replace(/\D/g, '')}`}
-                   target="_blank" rel="noreferrer" title={t('admin.contacter_whatsapp')}
-                   className="text-texte-faible hover:text-succes transition-colors shrink-0">
-                  <MessageCircle size={15} />
-                </a>
-              )}
-              {p.lien_facebook && (
-                <a href={p.lien_facebook} target="_blank" rel="noreferrer"
-                   title={t('admin.contacter_facebook')}
-                   className="text-texte-faible hover:text-neon transition-colors shrink-0">
-                  <ExternalLink size={15} />
-                </a>
-              )}
 
               <button onClick={() => supprimer.mutate(p.id)} className="text-texte-faible hover:text-danger transition-colors shrink-0">
                 <Trash2 size={15} />

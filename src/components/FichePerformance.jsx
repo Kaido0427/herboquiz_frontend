@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
-import { X, Trophy, Target, Swords, History, UsersRound } from 'lucide-react'
+import { X, Trophy, Target, Swords, History, UsersRound, MessageCircle, ExternalLink, Mail, Phone } from 'lucide-react'
 import { performanceService } from '@/services/herboquizService'
 import { cn } from '@/utils/cn'
 
@@ -50,6 +50,61 @@ export default function FichePerformance({ participantId, onFermer }) {
               <Chiffre icone={Trophy} valeur={data.total_points} libelle={t('perf.points')} accent />
               <Chiffre icone={Target} valeur={data.bonnes_reponses} libelle={t('perf.bonnes_reponses')} />
               <Chiffre icone={Swords} valeur={data.manches_jouees} libelle={t('perf.manches')} />
+            </div>
+
+            {/* Contact regroupe ici plutot qu'entasse dans la liste : on ouvre
+                la fiche de quelqu'un quand on veut le joindre, pas en parcourant
+                dix lignes. Ce qui manque est dit explicitement, au lieu de
+                laisser un trou qu'on prend pour un defaut d'affichage. */}
+            <div className="carte p-4 mb-5">
+              <p className="etiquette text-texte-faible mb-3">{t('perf.contact')}</p>
+
+              <div className="grid gap-2">
+                {data.participant.telephone ? (
+                  <a href={`https://wa.me/${String(data.participant.telephone).replace(/\D/g, '')}`}
+                     target="_blank" rel="noreferrer"
+                     className="flex items-center gap-3 rounded-xl border border-bord px-3 py-2.5 tape hover:border-succes">
+                    <MessageCircle size={16} className="text-succes shrink-0" />
+                    <span className="flex-1 min-w-0 truncate text-sm">{data.participant.telephone}</span>
+                    <span className="text-xs text-texte-faible">{t('perf.whatsapp')}</span>
+                  </a>
+                ) : (
+                  <p className="flex items-center gap-3 px-3 py-2.5 text-sm text-texte-faible">
+                    <Phone size={16} className="shrink-0" />
+                    {t('perf.telephone')} — {t('perf.non_fourni')}
+                  </p>
+                )}
+
+                {data.participant.lien_facebook ? (
+                  <a href={data.participant.lien_facebook} target="_blank" rel="noreferrer"
+                     className="flex items-center gap-3 rounded-xl border border-bord px-3 py-2.5 tape hover:border-neon">
+                    <ExternalLink size={16} className="text-neon shrink-0" />
+                    <span className="flex-1 min-w-0 truncate text-sm">{t('perf.facebook')}</span>
+                  </a>
+                ) : (
+                  <p className="flex items-center gap-3 px-3 py-2.5 text-sm text-texte-faible">
+                    <ExternalLink size={16} className="shrink-0" />
+                    {t('perf.facebook')} — {t('perf.non_fourni')}
+                  </p>
+                )}
+
+                {data.participant.email ? (
+                  <a href={`mailto:${data.participant.email}`}
+                     className="flex items-center gap-3 rounded-xl border border-bord px-3 py-2.5 tape hover:border-neon">
+                    <Mail size={16} className="text-texte-doux shrink-0" />
+                    <span className="flex-1 min-w-0 truncate text-sm">{data.participant.email}</span>
+                  </a>
+                ) : (
+                  <p className="flex items-center gap-3 px-3 py-2.5 text-sm text-texte-faible">
+                    <Mail size={16} className="shrink-0" />
+                    {t('perf.email')} — {t('perf.non_fourni')}
+                  </p>
+                )}
+              </div>
+
+              <p className="mt-3 pt-3 border-t border-bord text-xs text-texte-faible">
+                {data.participant.auto_inscrit ? t('perf.inscrit_lui_meme') : t('perf.saisi_par_admin')}
+              </p>
             </div>
 
             {data.equipes.length > 0 && (

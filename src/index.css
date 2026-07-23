@@ -88,3 +88,30 @@ body {
 /* Retour tactile : l'animateur doit sentir que son appui a ete pris. */
 .tape { transition: transform .08s ease, border-color .15s ease; }
 .tape:active { transform: scale(.985); }
+
+/* --- Retour d'action de l'animateur ---
+   Sans elles, l'ecran passait a la question suivante sans qu'on ait vu ce
+   qui venait d'etre valide : on tapait dans le vide. Le point marque
+   s'affiche un instant, puis la question suivante entre par la droite. */
+@keyframes eclat {
+  0%   { opacity: 0; transform: scale(.9) }
+  15%  { opacity: 1; transform: scale(1.02) }
+  85%  { opacity: 1; transform: scale(1) }
+  100% { opacity: 0; transform: scale(.98) }
+}
+@keyframes entre-droite {
+  from { opacity: 0; transform: translateX(24px) }
+  to   { opacity: 1; transform: none }
+}
+@keyframes sort-gauche {
+  from { opacity: 1; transform: none }
+  to   { opacity: 0; transform: translateX(-24px) }
+}
+
+.anim-eclat        { animation: eclat 1.3s ease both; }
+.anim-entre-droite { animation: entre-droite .28s ease both; }
+.anim-sort-gauche  { animation: sort-gauche .2s ease both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-eclat, .anim-entre-droite, .anim-sort-gauche { animation: none !important; }
+}

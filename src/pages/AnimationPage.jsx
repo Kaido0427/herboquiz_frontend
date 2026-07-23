@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Copy, Check, Undo2, Flag, ChevronLeft } from 'lucide-react'
+import { Copy, Check, Undo2, Flag, ChevronLeft, Trophy, MinusCircle } from 'lucide-react'
 import { animationService } from '@/services/herboquizService'
 import { QUERY_KEYS } from '@/hooks/queryKeys'
 import { cn } from '@/utils/cn'
@@ -24,6 +24,9 @@ export default function AnimationPage() {
   const { mancheId } = useParams()
   const qc = useQueryClient()
   const [copie, setCopie] = useState(false)
+  // Ce qui vient d'etre valide, affiche un instant avant la suite.
+  const [flash, setFlash] = useState(null)
+  const [transition, setTransition] = useState(false)
 
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.animation(mancheId),
@@ -35,13 +38,33 @@ export default function AnimationPage() {
 
   const rafraichir = () => qc.invalidateQueries({ queryKey: QUERY_KEYS.animation(mancheId) })
 
+  /**
+   * Attribution avec un temps de respiration.
+   *
+   * Sans lui, l'ecran sautait a la question suivante dans la milliseconde :
+   * l'animateur ne voyait pas ce qu'il venait de valider et ne savait pas si
+   * son appui avait ete pris. On affiche donc le point marque, puis on
+   * enchaine — le delai est court, mais il change tout.
+   */
   const attribuer = useMutation({
-    mutationFn: (equipeId) =>
+    mutationFn: (equipe) =>
       animationService.attribuer(mancheId, {
-        equipe_id: equipeId,
+        equipe_id: equipe?.id ?? null,
         question_id: data?.question?.id ?? null,
       }),
-    onSuccess: rafraichir,
+    onMutate: (equipe) => {
+      setFlash(equipe ? { libelle: equipe.libelle } : { aucun: true })
+      setTransition(true)
+    },
+    onSuccess: () => {
+      // On laisse le retour visible avant de basculer sur la suite.
+      setTimeout(() => {
+        rafraichir()
+        setFlash(null)
+        setTimeout(() => setTransition(false), 60)
+      }, 1100)
+    },
+    onError: () => { setFlash(null); setTransition(false) },
   })
 
   const annuler = useMutation({
@@ -67,7 +90,7 @@ export default function AnimationPage() {
 
   const { manche, question, equipes, classement } = data
   const scores = Object.fromEntries(classement.map((c) => [c.equipe_id, c.points]))
-  const enCours = attribuer.isPending || annuler.isPending
+  const enCours = attribuer.isPending || annuler.isPending || transition
 
   return (
     <div className="min-h-screen pb-8">
@@ -84,8 +107,33 @@ export default function AnimationPage() {
         </div>
       </header>
 
+      {/* Retour d'action : ce qui vient d'etre valide, visible le temps qu'il
+          faut pour en etre sur. */}
+      {flash && (
+        <div className="fixed inset-x-0 top-1/3 z-40 px-6 pointer-events-none">
+          <div className={cn('anim-eclat mx-auto max-w-sm rounded-2xl border px-5 py-4 text-center backdrop-blur',
+            flash.aucun
+              ? 'border-bord bg-surface/95'
+              : 'border-neon-sourd bg-surface/95 halo')}>
+            {flash.aucun ? (
+              <>
+                <MinusCircle size={22} className="mx-auto text-texte-faible" />
+                <p className="mt-2 text-sm text-texte-doux">{t('animation.aucun_point')}</p>
+              </>
+            ) : (
+              <>
+                <Trophy size={22} className="mx-auto text-neon" />
+                <p className="titre mt-2 text-xl font-bold truncate">{flash.libelle}</p>
+                <p className="text-sm text-neon">{t('animation.a_marque')}</p>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {question ? (
-        <section className="px-4 pt-5">
+        <section className={cn('px-4 pt-5', transition ? 'anim-sort-gauche' : 'anim-entre-droite')}
+                 key={manche.question_courante}>
           {/* La question, et le bouton qui evite de la retaper dans Messenger.
               C'est le geste qui fait gagner le plus de temps sur la soiree. */}
           <div className="rounded-2xl bg-surface border border-bord p-4">
@@ -118,7 +166,7 @@ export default function AnimationPage() {
                 key={e.id}
                 type="button"
                 disabled={enCours}
-                onClick={() => attribuer.mutate(e.id)}
+                onClick={() => attribuer.mutate(e)}
                 className="flex items-center justify-between rounded-xl bg-surface-haute border border-bord px-4 py-4 text-left active:border-neon disabled:opacity-50"
               >
                 <span className="font-medium">{e.libelle}</span>

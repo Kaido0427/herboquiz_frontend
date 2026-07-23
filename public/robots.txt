@@ -1,0 +1,6 @@
+# La page publique affiche les pseudonymes des participants et le classement
+# nominatif d'un evenement communautaire. Ces personnes n'ont pas demande a
+# apparaitre dans les resultats de recherche : le lien se partage dans le
+# groupe, il n'a pas vocation a etre indexe.
+User-agent: *
+Disallow: /

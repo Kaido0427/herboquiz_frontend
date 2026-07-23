@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+/*
+ * Charte HerboQuiz : bleu neon sur noir adouci.
+ *
+ * Les deux couleurs vivent ICI et nulle part ailleurs — changer la charte se
+ * fait en modifiant ces deux lignes, pas en fouillant les composants.
+ * Le fond n'est volontairement pas du noir pur : moins agressif le soir, et
+ * plus lisible sur les ecrans bon marche que beaucoup utilisent.
+ */
+@theme {
+  --color-neon: #22D3FF;
+  --color-neon-fort: #67E8F9;
+  --color-neon-sourd: #0E7490;
+
+  --color-fond: #0F1720;
+  --color-surface: #16202B;
+  --color-surface-haute: #1E2A38;
+  --color-bord: #2A3947;
+
+  --color-texte: #E8F1F8;
+  --color-texte-doux: #9DB2C4;
+  --color-texte-faible: #6B8299;
+
+  --color-succes: #34D399;
+  --color-alerte: #FBBF24;
+  --color-danger: #F87171;
+}
+
+html, body, #root { min-height: 100%; }
+
+body {
+  background-color: var(--color-fond);
+  color: var(--color-texte);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Halo neon : reserve aux elements qui portent une action ou un score. */
+.halo-neon { box-shadow: 0 0 0 1px var(--color-neon-sourd), 0 0 18px -4px var(--color-neon); }

@@ -77,3 +77,7 @@ export const inscriptionService = {
 export const preparationService = {
   etat: () => api.get('/preparation').then((r) => r.data),
 }
+
+export const performanceService = {
+  show: (id) => api.get(`/participants/${id}/performances`).then((r) => r.data),
+}

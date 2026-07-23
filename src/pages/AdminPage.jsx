@@ -15,6 +15,7 @@ import { QUERY_KEYS } from '@/hooks/queryKeys'
 import { useSession } from '@/contexts/SessionContext'
 import EditeurTexte from '@/components/EditeurTexte'
 import EtatChaine from '@/components/EtatChaine'
+import FichePerformance from '@/components/FichePerformance'
 import VueManches from '@/pages/admin/VueManches'
 import VueQuestions from '@/pages/admin/VueQuestions'
 import { cn } from '@/utils/cn'
@@ -283,6 +284,7 @@ function VueParticipants() {
   const qc = useQueryClient()
   const vide = { nom: '', prenom: '', pseudo: '', telephone: '', confirme: true }
   const [form, setForm] = useState(vide)
+  const [fiche, setFiche] = useState(null)
 
   const { data: liste = [] } = useQuery({ queryKey: QUERY_KEYS.participants, queryFn: participantService.liste })
   const rafraichir = () => qc.invalidateQueries({ queryKey: QUERY_KEYS.participants })
@@ -327,12 +329,18 @@ function VueParticipants() {
           {liste.map((p) => (
             <li key={p.id} className="flex items-center gap-3 px-4 py-3">
               <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', p.confirme ? 'bg-succes' : 'bg-alerte')} />
-              <div className="flex-1 min-w-0">
-                <p className="truncate">{p.nom_affiche}</p>
+              <button onClick={() => setFiche(p.id)} title={t('perf.voir_parcours')}
+                      className="flex-1 min-w-0 text-left group">
+                <p className="truncate group-hover:text-neon transition-colors">{p.nom_affiche}</p>
                 <p className="text-xs text-texte-faible truncate">
                   {p.nom_complet}{p.telephone ? ` · ${p.telephone}` : ''}{p.email ? ` · ${p.email}` : ''}
                 </p>
-              </div>
+              </button>
+
+              <button onClick={() => setFiche(p.id)} title={t('perf.voir_parcours')}
+                      className="text-texte-faible hover:text-neon transition-colors shrink-0">
+                <BarChart3 size={15} />
+              </button>
 
               {/* Contact direct depuis les informations fournies. Ouvrir le lien
                   sert aussi de verification : un profil qui ne s'ouvre pas est a
@@ -359,6 +367,8 @@ function VueParticipants() {
           ))}
         </ul>
       )}
+
+      <FichePerformance participantId={fiche} onFermer={() => setFiche(null)} />
     </div>
   )
 }

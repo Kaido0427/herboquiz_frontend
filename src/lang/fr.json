@@ -271,5 +271,19 @@
     "retour_accueil": "Retour à l'accueil",
     "fermees": "Les inscriptions sont closes.",
     "s_inscrire": "S'inscrire au tournoi"
+  },
+  "perf": {
+    "titre": "Parcours",
+    "points": "points",
+    "bonnes_reponses": "bonnes réponses",
+    "bonnes_reponses_court": "bonne(s) réponse(s)",
+    "manches": "manches jouées",
+    "equipe": "Équipe",
+    "avec": "avec",
+    "par_manche": "Manche par manche",
+    "journal": "Historique des points",
+    "aide_journal": "Chaque point garde le nom de l'animateur qui l'a attribué. C'est ce qui permet de trancher une contestation sur des faits.",
+    "rien_joue": "Ce participant n'a encore joué aucune manche.",
+    "voir_parcours": "Voir le parcours"
   }
 }

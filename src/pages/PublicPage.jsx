@@ -224,6 +224,18 @@ export default function PublicPage() {
         <p className="titre text-sm text-texte-faible italic">{r['textes.pied_page']}</p>
         {/* Si une session est deja ouverte, on repart directement dans
             l'administration : se deconnecter pour y revenir n'avait aucun sens. */}
+        {/* Mention volontairement discrete, sous la signature du groupe : le
+            tournoi appartient a la TEAM DES HERBOGENISTES, l'hebergeur passe
+            apres. Elle reste desactivable depuis les reglages. */}
+        {r['signature.active'] && r['signature.texte'] && (
+          <p className="mt-4">
+            <a href={r['signature.lien'] || '#'} target="_blank" rel="noreferrer"
+               className="text-[11px] text-texte-faible hover:text-neon transition-colors">
+              {r['signature.texte']}
+            </a>
+          </p>
+        )}
+
         <Link to={session.jeton() ? '/admin' : '/connexion'}
               className="mt-5 inline-flex items-center gap-1.5 text-xs text-texte-faible hover:text-neon transition-colors">
           <LogIn size={13} />

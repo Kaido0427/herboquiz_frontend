@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Users, UsersRound, LayoutGrid, Settings, KeyRound, Trash2, Plus,
   RefreshCw, LogOut, Check, ChevronRight, Menu, X, ShieldCheck, Wand2,
+  Swords, HelpCircle,
 } from 'lucide-react'
 import {
   participantService, equipeService, reglageService,
@@ -12,6 +13,8 @@ import {
 import { QUERY_KEYS } from '@/hooks/queryKeys'
 import { useSession } from '@/contexts/SessionContext'
 import EditeurTexte from '@/components/EditeurTexte'
+import VueManches from '@/pages/admin/VueManches'
+import VueQuestions from '@/pages/admin/VueQuestions'
 import { cn } from '@/utils/cn'
 
 const CHAMP = 'w-full rounded-xl bg-fond-2 border border-bord px-3 py-2.5 outline-none focus:border-neon transition-colors'
@@ -47,7 +50,11 @@ export default function AdminPage() {
     },
     {
       titre: t('admin.section_deroulement'),
-      entrees: [{ cle: 'simulation', libelle: t('admin.onglet_simulation'), icone: LayoutGrid }],
+      entrees: [
+        { cle: 'simulation', libelle: t('admin.onglet_simulation'), icone: LayoutGrid },
+        { cle: 'manches', libelle: t('admin.onglet_manches'), icone: Swords },
+        { cle: 'questions', libelle: t('admin.onglet_questions'), icone: HelpCircle },
+      ],
     },
     {
       titre: t('admin.section_systeme'),
@@ -119,6 +126,8 @@ export default function AdminPage() {
           {vue === 'participants' && <VueParticipants />}
           {vue === 'equipes' && <VueEquipes />}
           {vue === 'simulation' && <VueSimulation />}
+          {vue === 'manches' && <VueManches />}
+          {vue === 'questions' && <VueQuestions />}
           {vue === 'acces' && <VueAcces />}
         </main>
       </div>

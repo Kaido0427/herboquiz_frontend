@@ -1,6 +1,7 @@
 import api from './api'
 
 export const authService = {
+  verifier: (code) => api.post('/connexion/verifier', { code }).then((r) => r.data),
   connexion: (code, nom) => api.post('/connexion', { code, nom }).then((r) => r.data),
   moi: () => api.get('/moi').then((r) => r.data),
   deconnexion: () => api.post('/deconnexion').then((r) => r.data),

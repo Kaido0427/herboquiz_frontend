@@ -21,10 +21,13 @@
     "sous_titre": "Entrez le code qui vous a été communiqué",
     "code": "Code d'accès",
     "nom": "Votre nom",
-    "aide_nom": "Sert à savoir qui attribue les points en cas de contestation.",
+    "aide_nom": "Le code est partagé : votre nom sert à savoir qui attribue les points en cas de contestation.",
     "valider": "Entrer",
     "erreur_code": "Code invalide.",
-    "deconnexion": "Se déconnecter"
+    "deconnexion": "Se déconnecter",
+    "qui_es_tu": "Qui êtes-vous ?",
+    "autre_nom": "Mon nom n'est pas dans la liste",
+    "choisir_liste": "Revenir à la liste"
   },
   "public": {
     "inscrits": "inscrits",
@@ -150,7 +153,31 @@
       "simulation": "Format et seuils"
     },
     "rien_a_enregistrer": "Aucune modification",
-    "modifications": "modification(s) non enregistrée(s)"
+    "modifications": "modification(s) non enregistrée(s)",
+    "creer_manche": "Créer la manche",
+    "manche_sans_equipes": "Aucune équipe affectée",
+    "equipes_affectees": "équipe(s)",
+    "choisir_equipes": "Équipes qui s'affrontent",
+    "aide_manche": "Une manche de poule se joue sur un nombre de questions fixe. Un duel s'arrête dès qu'un joueur atteint le score cible.",
+    "aide_questions": "Préparez les questions avant le match : le jour venu, l'animateur n'a plus qu'à les enchaîner.",
+    "choisir_manche_questions": "Manche à préparer",
+    "question_numero": "Question",
+    "ajouter_ligne": "Ajouter une question",
+    "coller_lot": "Coller une liste",
+    "aide_coller": "Une question par ligne, séparée de sa réponse par « | ». Exemple : Quelle plante calme la toux ? | Le thym",
+    "importer": "Importer",
+    "questions_prep": "question(s) préparée(s)",
+    "supprimer_question": "Retirer cette question",
+    "manche_a_venir": "À venir",
+    "manche_en_cours": "En cours",
+    "manche_terminee": "Terminée",
+    "aucune_manche_creer": "Aucune manche. Créez-en une, ou passez par le format pour les générer automatiquement.",
+    "selectionner": "Sélectionner…",
+    "onglet_membres": "Membres",
+    "nouveau_membre": "Ajouter un membre",
+    "aide_membres": "Les personnes qui apparaissent au choix du nom à la connexion. Chacun peut corriger le sien.",
+    "role_admin": "Administrateur",
+    "role_modo": "Animateur"
   },
   "nav": {
     "accueil": "Accueil",

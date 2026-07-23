@@ -1,0 +1,52 @@
+name: Deploy HerboQuiz Frontend
+
+on:
+  push:
+    branches: ["main"]
+    paths-ignore:
+      - "**.md"
+      - ".gitignore"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-herboquiz-frontend
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci
+
+      # Le VPS n'a pas Node : la construction se fait ici, on n'envoie que le
+      # resultat.
+      - name: Construire
+        run: npm run build
+
+      - name: Cle SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -T 10 -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Envoyer le site
+        run: |
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no -o ConnectTimeout=30" \
+            dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/
+
+      - name: Verifier que le site repond
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 https://herboquiz.novafriq.africa/)
+          echo "site -> $code"
+          [ "$code" = "200" ] || exit 1

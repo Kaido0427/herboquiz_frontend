@@ -40,7 +40,17 @@
     "premier": "1er",
     "deuxieme": "2e",
     "troisieme": "3e",
-    "animateurs": "Animateurs"
+    "animateurs": "Animateurs",
+    "podium": "Podium",
+    "en_direct": "En direct",
+    "a_venir": "À venir",
+    "termine": "Terminé",
+    "en_cours": "En cours",
+    "voir_reglement": "Voir le règlement",
+    "jours": "j",
+    "heures": "h",
+    "minutes": "min",
+    "avant_le_debut": "avant le coup d'envoi"
   },
   "animation": {
     "titre": "Animation",
@@ -116,11 +126,46 @@
     "aide_regenerer": "Régénérer déconnecte immédiatement ceux qui utilisaient l'ancien code.",
     "confirmer_regenerer": "Régénérer ce code ? Les personnes connectées avec l'ancien seront déconnectées.",
     "sessions": "Connexions récentes",
-    "reglages_enregistres": "Réglages enregistrés."
+    "reglages_enregistres": "Réglages enregistrés.",
+    "section_tournoi": "Le tournoi",
+    "section_joueurs": "Les joueurs",
+    "section_deroulement": "Le déroulement",
+    "section_systeme": "Système",
+    "aide_reglages_groupe": {
+      "general": "Identité de l'événement, telle qu'elle apparaît sur la page publique.",
+      "inscriptions": "Sans méthode d'inscription claire ni date de clôture, le format ne peut pas être arrêté.",
+      "prix": "Montants annoncés publiquement. Les annoncer tôt fait s'inscrire.",
+      "annonce": "Textes affichés en haut de la page publique.",
+      "reglement": "À garder court : un règlement long n'est pas lu.",
+      "jeu": "Règles de calcul des points pendant une manche.",
+      "simulation": "Seuils qui produisent la proposition de format. Modifiez-les si votre réalité diffère."
+    },
+    "groupe": {
+      "general": "Général",
+      "inscriptions": "Inscriptions",
+      "prix": "Récompenses",
+      "annonce": "Annonce",
+      "reglement": "Règlement",
+      "jeu": "Règles du jeu",
+      "simulation": "Format et seuils"
+    },
+    "rien_a_enregistrer": "Aucune modification",
+    "modifications": "modification(s) non enregistrée(s)"
   },
   "nav": {
     "accueil": "Accueil",
     "animation": "Animer",
     "admin": "Administration"
+  },
+  "editeur": {
+    "gras": "Gras",
+    "italique": "Italique",
+    "titre": "Titre",
+    "liste": "Liste à puces",
+    "liste_num": "Liste numérotée",
+    "citation": "Citation",
+    "apercu": "Aperçu",
+    "editer": "Éditer",
+    "exemple": "votre texte"
   }
 }

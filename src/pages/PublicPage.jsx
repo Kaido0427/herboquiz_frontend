@@ -1,17 +1,21 @@
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { Trophy, CalendarDays, Users, ScrollText, LogIn } from 'lucide-react'
+import { Trophy, CalendarDays, Users, ScrollText, LogIn, Medal, Radio, Sparkles } from 'lucide-react'
 import { publicService } from '@/services/herboquizService'
 import { QUERY_KEYS } from '@/hooks/queryKeys'
+import { Apercu } from '@/components/EditeurTexte'
 import { cn } from '@/utils/cn'
 
 /**
  * Page ouverte a tous.
  *
- * Elle doit rester legere : beaucoup la consulteront depuis un telephone
- * modeste avec une connexion faible. Et surtout, aucun joueur n'a BESOIN de
- * cette page pour jouer — elle informe, elle ne conditionne rien.
+ * Deux exigences qui ont dicte la mise en page :
+ *  - Elle doit rester legere. Beaucoup la consulteront depuis un telephone
+ *    modeste avec une connexion faible, et aucun joueur n'en a BESOIN pour
+ *    jouer : elle informe, elle ne conditionne rien.
+ *  - Le classement est ce qu'on vient voir. Il passe donc devant le reste, et
+ *    le podium se lit d'un coup d'oeil sans avoir a comparer des chiffres.
  */
 export default function PublicPage() {
   const { t } = useTranslation()
@@ -21,132 +25,202 @@ export default function PublicPage() {
     refetchInterval: 30000,
   })
 
-  if (isLoading) return <p className="p-6 text-texte-doux">{t('commun.chargement')}</p>
+  if (isLoading) {
+    return (
+      <div className="min-h-screen grid place-items-center">
+        <p className="etiquette text-texte-faible anim-pulse">{t('commun.chargement')}</p>
+      </div>
+    )
+  }
 
   const r = data.reglages
   const devise = r['prix.devise'] ?? ''
   const montant = (v) => `${Number(v ?? 0).toLocaleString('fr-FR')} ${devise}`
-
-  const Section = ({ icone: Icone, titre, children }) => (
-    <section className="mt-8">
-      <h2 className="flex items-center gap-2 text-sm uppercase tracking-widest text-texte-faible mb-3">
-        <Icone size={14} />
-        {titre}
-      </h2>
-      {children}
-    </section>
-  )
+  const podium = data.classement.slice(0, 3)
+  const suite = data.classement.slice(3)
+  const enDirect = data.manches.some((m) => m.statut === 'en_cours')
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
-      <header className="text-center">
-        <p className="text-xs uppercase tracking-widest text-texte-faible">{r['tournoi.organisateur']}</p>
-        <h1 className="mt-2 text-3xl font-bold text-neon">{r['tournoi.nom']}</h1>
-        <p className="mt-3 text-texte-doux">{r['tournoi.debut']}</p>
-        <p className="mt-1 text-sm text-texte-faible">
-          {data.nb_inscrits} {t('public.inscrits')}
-        </p>
+    <div className="max-w-3xl mx-auto px-4 pb-16">
+
+      {/* ---------- En-tete ---------- */}
+      <header className="pt-12 pb-10 text-center anim-monte">
+        <p className="etiquette text-neon-sourd">{r['tournoi.organisateur']}</p>
+
+        <h1 className="titre mt-3 text-4xl sm:text-5xl font-bold leading-tight">
+          <span className="text-neon">{r['tournoi.nom']}</span>
+        </h1>
+
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+          <span className="carte px-3 py-1.5 text-sm text-texte-doux">{r['tournoi.debut']}</span>
+          <span className="carte px-3 py-1.5 text-sm">
+            <strong className="text-neon">{data.nb_inscrits}</strong>
+            <span className="text-texte-doux"> {t('public.inscrits')}</span>
+          </span>
+          {enDirect && (
+            <span className="flex items-center gap-1.5 rounded-full bg-danger/15 border border-danger/40 px-3 py-1.5 text-sm text-danger">
+              <Radio size={13} className="anim-pulse" />
+              {t('public.en_direct')}
+            </span>
+          )}
+        </div>
       </header>
 
-      {r['textes.annonce'] && (
-        <p className="mt-8 whitespace-pre-line leading-relaxed text-texte-doux">{r['textes.annonce']}</p>
+      {/* ---------- Podium : la raison d'etre de la page ---------- */}
+      {podium.length > 0 && (
+        <section className="anim-monte">
+          <TitreSection icone={Trophy} libelle={t('public.podium')} />
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            {[1, 0, 2].map((rang) => {
+              const e = podium[rang]
+              if (!e) return <div key={rang} />
+              const couleurs = ['text-or', 'text-argent', 'text-bronze']
+              const hauteurs = ['pt-4 pb-7', 'pt-7 pb-5', 'pt-9 pb-4']
+              return (
+                <div key={rang}
+                  className={cn('carte flex flex-col items-center px-2 text-center', hauteurs[rang],
+                    rang === 0 && 'halo-or')}>
+                  <Medal size={rang === 0 ? 26 : 20} className={couleurs[rang]} />
+                  <p className="mt-2 text-sm font-medium truncate w-full">{e.libelle}</p>
+                  <p className={cn('titre mt-1 font-bold tabular-nums', rang === 0 ? 'text-2xl text-or' : 'text-xl text-texte-doux')}>
+                    {e.points}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+
+          {suite.length > 0 && (
+            <ol className="carte mt-3 divide-y divide-bord cascade">
+              {suite.map((c, i) => (
+                <li key={c.libelle + i} className="flex items-center gap-3 px-4 py-2.5">
+                  <span className="w-6 text-texte-faible tabular-nums text-sm">{i + 4}</span>
+                  <span className="flex-1 truncate text-sm">{c.libelle}</span>
+                  <span className="tabular-nums text-texte-doux">{c.points}</span>
+                </li>
+              ))}
+            </ol>
+          )}
+        </section>
       )}
 
-      <Section icone={Trophy} titre={t('public.prix')}>
-        <div className="grid grid-cols-3 gap-2">
+      {data.classement.length === 0 && (
+        <section className="carte px-5 py-8 text-center anim-monte">
+          <Sparkles size={22} className="mx-auto text-neon-sourd" />
+          <p className="mt-3 text-sm text-texte-doux">{t('public.aucun_classement')}</p>
+        </section>
+      )}
+
+      {/* ---------- Recompenses ---------- */}
+      <section className="mt-12">
+        <TitreSection icone={Trophy} libelle={t('public.prix')} />
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
           {[
-            [t('public.premier'), r['prix.premier']],
-            [t('public.deuxieme'), r['prix.deuxieme']],
-            [t('public.troisieme'), r['prix.troisieme']],
-          ].map(([rang, valeur], i) => (
-            <div key={rang} className={cn(
-              'rounded-xl border p-3 text-center',
-              i === 0 ? 'border-neon-sourd bg-surface halo-neon' : 'border-bord bg-surface',
-            )}>
-              <p className="text-xs text-texte-faible">{rang}</p>
-              <p className={cn('mt-1 font-bold', i === 0 ? 'text-neon' : 'text-texte')}>{montant(valeur)}</p>
+            [t('public.premier'), r['prix.premier'], 'text-or', 'halo-or'],
+            [t('public.deuxieme'), r['prix.deuxieme'], 'text-argent', ''],
+            [t('public.troisieme'), r['prix.troisieme'], 'text-bronze', ''],
+          ].map(([rang, valeur, couleur, halo]) => (
+            <div key={rang} className={cn('carte px-3 py-4 text-center', halo)}>
+              <p className="etiquette text-texte-faible">{rang}</p>
+              <p className={cn('titre mt-1.5 text-lg font-bold', couleur)}>{montant(valeur)}</p>
             </div>
           ))}
         </div>
-        {r['prix.versement'] && <p className="mt-3 text-xs text-texte-faible">{r['prix.versement']}</p>}
-      </Section>
+        {r['prix.versement'] && (
+          <p className="mt-3 text-xs text-texte-faible text-center">{r['prix.versement']}</p>
+        )}
+      </section>
 
-      {/* L'information la plus importante avant le coup d'envoi : sans methode
-          d'inscription claire et sans date de cloture, il n'y a pas de tournoi. */}
+      {/* ---------- Inscriptions : l'information la plus utile avant le debut ---------- */}
       {r['inscriptions.ouvertes'] && (
-        <Section icone={Users} titre={t('public.comment_sinscrire')}>
-          <div className="rounded-xl bg-surface border border-bord p-4">
-            <p className="whitespace-pre-line text-texte-doux">{r['inscriptions.comment']}</p>
+        <section className="mt-12">
+          <TitreSection icone={Users} libelle={t('public.comment_sinscrire')} />
+          <div className="carte p-5 halo">
+            <Apercu texte={r['inscriptions.comment'] ?? ''} />
             {r['inscriptions.date_limite'] && (
-              <p className="mt-3 text-sm">
-                <span className="text-texte-faible">{t('public.date_limite')} : </span>
-                <span className="text-neon font-semibold">{r['inscriptions.date_limite']}</span>
+              <p className="mt-4 pt-4 border-t border-bord text-sm">
+                <span className="etiquette text-texte-faible">{t('public.date_limite')}</span>
+                <span className="block titre text-lg text-neon font-semibold">{r['inscriptions.date_limite']}</span>
               </p>
             )}
           </div>
-        </Section>
+        </section>
       )}
 
-      <Section icone={Trophy} titre={t('public.classement')}>
-        {data.classement.length === 0 ? (
-          <p className="text-texte-faible text-sm">{t('public.aucun_classement')}</p>
-        ) : (
-          <ol className="rounded-2xl bg-surface border border-bord divide-y divide-bord">
-            {data.classement.map((c, i) => (
-              <li key={c.libelle + i} className="flex items-center gap-3 px-4 py-3">
-                <span className="w-6 text-texte-faible tabular-nums">{i + 1}</span>
-                <span className="flex-1 truncate">{c.libelle}</span>
-                <span className={cn('font-bold tabular-nums', i === 0 ? 'text-neon' : 'text-texte-doux')}>
-                  {c.points}
-                </span>
-              </li>
-            ))}
-          </ol>
-        )}
-      </Section>
+      {/* ---------- Annonce ---------- */}
+      {r['textes.annonce'] && (
+        <section className="mt-12">
+          <TitreSection icone={Sparkles} libelle={r['tournoi.nom']} />
+          <div className="carte p-5 leading-relaxed">
+            <Apercu texte={r['textes.annonce']} />
+          </div>
+        </section>
+      )}
 
-      <Section icone={CalendarDays} titre={t('public.calendrier')}>
+      {/* ---------- Calendrier ---------- */}
+      <section className="mt-12">
+        <TitreSection icone={CalendarDays} libelle={t('public.calendrier')} />
         {data.manches.length === 0 ? (
-          <p className="text-texte-faible text-sm">{t('public.aucune_manche')}</p>
+          <p className="carte px-5 py-6 text-sm text-texte-faible text-center">{t('public.aucune_manche')}</p>
         ) : (
-          <ul className="rounded-2xl bg-surface border border-bord divide-y divide-bord">
+          <ul className="carte divide-y divide-bord cascade">
             {data.manches.map((m) => (
-              <li key={m.id} className="flex items-center justify-between px-4 py-3">
-                <span>{m.libelle}</span>
-                <span className="text-xs text-texte-faible">{m.statut}</span>
+              <li key={m.id} className="flex items-center gap-3 px-4 py-3">
+                <span className={cn('w-1.5 h-1.5 rounded-full shrink-0',
+                  m.statut === 'en_cours' ? 'bg-danger anim-pulse'
+                    : m.statut === 'terminee' ? 'bg-texte-faible' : 'bg-neon-sourd')} />
+                <span className="flex-1 truncate">{m.libelle}</span>
+                <span className="etiquette text-texte-faible">{t(`public.${m.statut === 'terminee' ? 'termine' : m.statut === 'en_cours' ? 'en_cours' : 'a_venir'}`)}</span>
               </li>
             ))}
           </ul>
         )}
-      </Section>
+      </section>
 
+      {/* ---------- Reglement ---------- */}
       {r['textes.reglement'] && (
-        <Section icone={ScrollText} titre={t('public.reglement')}>
-          <p className="whitespace-pre-line text-sm leading-relaxed text-texte-doux">{r['textes.reglement']}</p>
-        </Section>
+        <section className="mt-12">
+          <TitreSection icone={ScrollText} libelle={t('public.reglement')} />
+          <div className="carte p-5 text-sm">
+            <Apercu texte={r['textes.reglement']} />
+          </div>
+        </section>
       )}
 
+      {/* ---------- Participants ---------- */}
       {data.participants.length > 0 && (
-        <Section icone={Users} titre={t('public.participants')}>
-          {/* Volontairement sans numero de telephone : il sert a verser les
-              prix, il n'a rien a faire sur une page ouverte a tous. */}
-          <div className="flex flex-wrap gap-2">
+        <section className="mt-12">
+          <TitreSection icone={Users} libelle={`${t('public.participants')} (${data.participants.length})`} />
+          {/* Volontairement sans numero de telephone : il sert a verser les prix,
+              il n'a rien a faire sur une page ouverte a tous. */}
+          <div className="flex flex-wrap gap-1.5">
             {data.participants.map((p, i) => (
-              <span key={i} className="rounded-lg bg-surface border border-bord px-3 py-1 text-sm">
+              <span key={i} className="rounded-lg bg-surface border border-bord px-2.5 py-1 text-sm text-texte-doux">
                 {p.nom_affiche}
               </span>
             ))}
           </div>
-        </Section>
+        </section>
       )}
 
-      <footer className="mt-12 pt-6 border-t border-bord text-center">
-        <p className="text-sm text-texte-faible italic">{r['textes.pied_page']}</p>
-        <Link to="/connexion" className="mt-4 inline-flex items-center gap-1.5 text-xs text-texte-faible hover:text-neon">
+      <footer className="mt-16 pt-8 border-t border-bord text-center">
+        <p className="titre text-sm text-texte-faible italic">{r['textes.pied_page']}</p>
+        <Link to="/connexion"
+              className="mt-5 inline-flex items-center gap-1.5 text-xs text-texte-faible hover:text-neon transition-colors">
           <LogIn size={13} />
           {t('nav.admin')}
         </Link>
       </footer>
+    </div>
+  )
+}
+
+function TitreSection({ icone: Icone, libelle }) {
+  return (
+    <div className="flex items-center gap-2 mb-4">
+      <Icone size={14} className="text-neon-sourd" />
+      <h2 className="etiquette text-texte-faible">{libelle}</h2>
+      <span className="flex-1 h-px bg-gradient-to-r from-bord to-transparent" />
     </div>
   )
 }

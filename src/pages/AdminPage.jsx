@@ -1,132 +1,286 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Users, UsersRound, LayoutGrid, Settings, KeyRound, Trash2, Plus, RefreshCw, LogOut } from 'lucide-react'
+import {
+  Users, UsersRound, LayoutGrid, Settings, KeyRound, Trash2, Plus,
+  RefreshCw, LogOut, Check, ChevronRight, Menu, X, ShieldCheck, Wand2,
+} from 'lucide-react'
 import {
   participantService, equipeService, reglageService,
   simulationService, accesService,
 } from '@/services/herboquizService'
 import { QUERY_KEYS } from '@/hooks/queryKeys'
 import { useSession } from '@/contexts/SessionContext'
+import EditeurTexte from '@/components/EditeurTexte'
 import { cn } from '@/utils/cn'
 
-const CHAMP = 'w-full rounded-xl bg-surface border border-bord px-3 py-2 outline-none focus:border-neon'
+const CHAMP = 'w-full rounded-xl bg-fond-2 border border-bord px-3 py-2.5 outline-none focus:border-neon transition-colors'
 
 /**
  * Espace d'administration.
  *
- * Principe directeur : tout ce qui pourrait un jour devoir changer se change
- * ICI. Aucun texte, aucun prix, aucun seuil du tournoi ne vit dans le code.
- * Les listes longues sont en onglets avec compteurs plutot qu'empilees.
+ * Deux principes :
+ *  - Tout ce qui pourrait un jour devoir changer se change ICI. Aucun texte,
+ *    aucun prix, aucun seuil du tournoi ne vit dans le code.
+ *  - Les sections sont groupees comme l'organisateur y pense (le tournoi, les
+ *    joueurs, le deroulement, le systeme), pas comme la base est structuree.
+ *    Une rangee d'onglets a plat obligeait a chercher ; une colonne groupee se
+ *    parcourt des yeux.
  */
 export default function AdminPage() {
   const { t } = useTranslation()
   const { deconnexion, utilisateur } = useSession()
-  const [onglet, setOnglet] = useState('participants')
+  const [vue, setVue] = useState('reglages')
+  const [menuOuvert, setMenuOuvert] = useState(false)
 
-  const onglets = [
-    { cle: 'participants', libelle: t('admin.onglet_participants'), icone: Users },
-    { cle: 'equipes',      libelle: t('admin.onglet_equipes'),      icone: UsersRound },
-    { cle: 'simulation',   libelle: t('admin.onglet_simulation'),   icone: LayoutGrid },
-    { cle: 'reglages',     libelle: t('admin.onglet_reglages'),     icone: Settings },
-    { cle: 'acces',        libelle: t('admin.onglet_acces'),        icone: KeyRound },
+  const sections = [
+    {
+      titre: t('admin.section_tournoi'),
+      entrees: [{ cle: 'reglages', libelle: t('admin.onglet_reglages'), icone: Settings }],
+    },
+    {
+      titre: t('admin.section_joueurs'),
+      entrees: [
+        { cle: 'participants', libelle: t('admin.onglet_participants'), icone: Users },
+        { cle: 'equipes', libelle: t('admin.onglet_equipes'), icone: UsersRound },
+      ],
+    },
+    {
+      titre: t('admin.section_deroulement'),
+      entrees: [{ cle: 'simulation', libelle: t('admin.onglet_simulation'), icone: LayoutGrid }],
+    },
+    {
+      titre: t('admin.section_systeme'),
+      entrees: [{ cle: 'acces', libelle: t('admin.onglet_acces'), icone: KeyRound }],
+    },
   ]
 
+  const courante = sections.flatMap((s) => s.entrees).find((e) => e.cle === vue)
+
+  const Navigation = () => (
+    <nav className="space-y-6">
+      {sections.map((s) => (
+        <div key={s.titre}>
+          <p className="etiquette text-texte-faible px-3 mb-2">{s.titre}</p>
+          <div className="space-y-0.5">
+            {s.entrees.map((e) => (
+              <button key={e.cle} onClick={() => { setVue(e.cle); setMenuOuvert(false) }}
+                className={cn(
+                  'w-full flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-left transition-colors',
+                  vue === e.cle
+                    ? 'bg-neon/10 text-neon border border-neon-sourd'
+                    : 'text-texte-doux hover:bg-surface border border-transparent',
+                )}>
+                <e.icone size={15} />
+                {e.libelle}
+                {vue === e.cle && <ChevronRight size={14} className="ml-auto" />}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+    </nav>
+  )
+
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6">
-      <header className="flex items-center justify-between mb-5">
-        <h1 className="text-xl font-bold text-neon">{t('admin.titre')}</h1>
-        <button onClick={deconnexion} className="flex items-center gap-1.5 text-xs text-texte-faible hover:text-texte">
-          <LogOut size={14} />
-          {utilisateur?.nom}
+    <div className="min-h-screen">
+      {/* Barre superieure : contexte global (qui suis-je, sortir), constante. */}
+      <header className="sticky top-0 z-30 flex items-center gap-3 px-4 h-14 border-b border-bord bg-fond/90 backdrop-blur">
+        <button onClick={() => setMenuOuvert(!menuOuvert)} className="lg:hidden text-texte-doux">
+          {menuOuvert ? <X size={20} /> : <Menu size={20} />}
         </button>
+        <p className="titre font-bold text-neon">HerboQuiz</p>
+        <span className="hidden sm:block text-texte-faible">·</span>
+        <p className="hidden sm:block text-sm text-texte-doux">{courante?.libelle}</p>
+
+        <div className="ml-auto flex items-center gap-3">
+          <span className="hidden sm:flex items-center gap-1.5 text-xs text-texte-faible">
+            <ShieldCheck size={13} className="text-neon-sourd" />
+            {utilisateur?.nom}
+          </span>
+          <button onClick={deconnexion} className="text-texte-faible hover:text-danger transition-colors">
+            <LogOut size={16} />
+          </button>
+        </div>
       </header>
 
-      <nav className="flex gap-1 overflow-x-auto pb-2 mb-5">
-        {onglets.map((o) => (
-          <button key={o.cle} onClick={() => setOnglet(o.cle)}
-            className={cn(
-              'flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-sm',
-              onglet === o.cle ? 'bg-neon text-fond font-semibold' : 'bg-surface text-texte-doux',
-            )}>
-            <o.icone size={14} />
-            {o.libelle}
-          </button>
-        ))}
-      </nav>
+      <div className="max-w-6xl mx-auto flex gap-8 px-4 py-6">
+        <aside className={cn(
+          'lg:block lg:w-56 lg:shrink-0',
+          menuOuvert
+            ? 'fixed inset-x-0 top-14 bottom-0 z-20 bg-fond p-4 overflow-y-auto anim-glisse'
+            : 'hidden',
+        )}>
+          <Navigation />
+        </aside>
 
-      {onglet === 'participants' && <OngletParticipants />}
-      {onglet === 'equipes' && <OngletEquipes />}
-      {onglet === 'simulation' && <OngletSimulation />}
-      {onglet === 'reglages' && <OngletReglages />}
-      {onglet === 'acces' && <OngletAcces />}
+        <main className="flex-1 min-w-0 anim-monte" key={vue}>
+          {vue === 'reglages' && <VueReglages />}
+          {vue === 'participants' && <VueParticipants />}
+          {vue === 'equipes' && <VueEquipes />}
+          {vue === 'simulation' && <VueSimulation />}
+          {vue === 'acces' && <VueAcces />}
+        </main>
+      </div>
     </div>
   )
 }
 
-function OngletParticipants() {
+function EnTete({ titre, aide }) {
+  return (
+    <div className="mb-5">
+      <h1 className="titre text-2xl font-bold">{titre}</h1>
+      {aide && <p className="mt-1 text-sm text-texte-doux leading-relaxed">{aide}</p>}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+
+function VueReglages() {
   const { t } = useTranslation()
   const qc = useQueryClient()
-  const [form, setForm] = useState({ nom: '', prenom: '', pseudo: '', telephone: '', confirme: true })
+  const [modifs, setModifs] = useState({})
 
-  const { data: liste = [] } = useQuery({
-    queryKey: QUERY_KEYS.participants, queryFn: participantService.liste,
+  const { data: groupes = {} } = useQuery({ queryKey: QUERY_KEYS.reglages, queryFn: reglageService.liste })
+
+  const enregistrer = useMutation({
+    mutationFn: () => reglageService.enregistrer(
+      Object.entries(modifs).map(([cle, valeur]) => ({ cle, valeur })),
+    ),
+    onSuccess: () => { setModifs({}); qc.invalidateQueries({ queryKey: QUERY_KEYS.reglages }) },
   })
+
+  const valeurDe = (r) => (modifs[r.cle] !== undefined ? modifs[r.cle] : (r.valeur ?? ''))
+  const nbModifs = Object.keys(modifs).length
+
+  return (
+    <div className="pb-24">
+      <EnTete titre={t('admin.onglet_reglages')} />
+
+      {Object.entries(groupes).map(([groupe, reglages]) => (
+        <section key={groupe} className="mb-6">
+          <div className="flex items-baseline gap-2 mb-2">
+            <h2 className="titre text-lg font-semibold text-neon">
+              {t(`admin.groupe.${groupe}`, groupe)}
+            </h2>
+          </div>
+          <p className="text-xs text-texte-faible mb-3">{t(`admin.aide_reglages_groupe.${groupe}`, '')}</p>
+
+          <div className="carte p-5 grid gap-5">
+            {reglages.map((r) => (
+              <div key={r.cle}>
+                <label className="block text-sm font-medium mb-1.5">{r.libelle}</label>
+
+                {r.type === 'markdown' ? (
+                  <EditeurTexte valeur={valeurDe(r)} onChange={(v) => setModifs({ ...modifs, [r.cle]: v })} />
+                ) : r.type === 'booleen' ? (
+                  <Bascule valeur={valeurDe(r) === '1' || valeurDe(r) === true}
+                           onChange={(v) => setModifs({ ...modifs, [r.cle]: v ? '1' : '0' })} />
+                ) : (
+                  <input type={r.type === 'nombre' ? 'number' : 'text'} value={valeurDe(r)}
+                         onChange={(e) => setModifs({ ...modifs, [r.cle]: e.target.value })}
+                         className={CHAMP} />
+                )}
+
+                {r.aide && <p className="mt-1.5 text-xs text-texte-faible leading-relaxed">{r.aide}</p>}
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
+
+      {/* Barre d'enregistrement : n'apparait que s'il y a quelque chose a
+          enregistrer, et indique combien de champs ont bouge. */}
+      {nbModifs > 0 && (
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-bord bg-fond/95 backdrop-blur px-4 py-3 anim-monte">
+          <div className="max-w-6xl mx-auto flex items-center gap-3">
+            <p className="text-sm text-texte-doux">
+              <strong className="text-neon">{nbModifs}</strong> {t('admin.modifications')}
+            </p>
+            <button onClick={() => setModifs({})} className="ml-auto text-sm text-texte-faible hover:text-texte">
+              {t('commun.annuler')}
+            </button>
+            <button onClick={() => enregistrer.mutate()} disabled={enregistrer.isPending}
+                    className="flex items-center gap-2 rounded-xl bg-neon text-fond font-semibold px-5 py-2.5 halo tape disabled:opacity-50">
+              <Check size={16} />
+              {t('commun.enregistrer')}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function Bascule({ valeur, onChange }) {
+  return (
+    <button type="button" onClick={() => onChange(!valeur)}
+      className={cn('relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
+        valeur ? 'bg-neon' : 'bg-bord')}>
+      <span className={cn('inline-block h-4.5 w-4.5 transform rounded-full bg-fond transition-transform',
+        valeur ? 'translate-x-6' : 'translate-x-1')} style={{ height: 18, width: 18 }} />
+    </button>
+  )
+}
+
+// ---------------------------------------------------------------------------
+
+function VueParticipants() {
+  const { t } = useTranslation()
+  const qc = useQueryClient()
+  const vide = { nom: '', prenom: '', pseudo: '', telephone: '', confirme: true }
+  const [form, setForm] = useState(vide)
+
+  const { data: liste = [] } = useQuery({ queryKey: QUERY_KEYS.participants, queryFn: participantService.liste })
   const rafraichir = () => qc.invalidateQueries({ queryKey: QUERY_KEYS.participants })
 
   const creer = useMutation({
     mutationFn: () => participantService.creer(form),
-    onSuccess: () => { setForm({ nom: '', prenom: '', pseudo: '', telephone: '', confirme: true }); rafraichir() },
+    onSuccess: () => { setForm(vide); rafraichir() },
   })
   const supprimer = useMutation({ mutationFn: participantService.supprimer, onSuccess: rafraichir })
 
+  const confirmes = liste.filter((p) => p.confirme).length
+
   return (
     <div>
-      <form onSubmit={(e) => { e.preventDefault(); creer.mutate() }}
-            className="rounded-2xl bg-surface border border-bord p-4 mb-5 grid gap-3 sm:grid-cols-2">
-        <div>
-          <label className="block text-xs text-texte-faible mb-1">{t('admin.nom')}</label>
-          <input required value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} className={CHAMP} />
-        </div>
-        <div>
-          <label className="block text-xs text-texte-faible mb-1">{t('admin.prenom')}</label>
-          <input value={form.prenom} onChange={(e) => setForm({ ...form, prenom: e.target.value })} className={CHAMP} />
-        </div>
-        <div>
-          <label className="block text-xs text-texte-faible mb-1">{t('admin.pseudo')}</label>
-          <input value={form.pseudo} onChange={(e) => setForm({ ...form, pseudo: e.target.value })} className={CHAMP} />
-          <p className="mt-1 text-xs text-texte-faible">{t('admin.aide_pseudo')}</p>
-        </div>
-        <div>
-          <label className="block text-xs text-texte-faible mb-1">{t('admin.telephone')}</label>
-          <input value={form.telephone} onChange={(e) => setForm({ ...form, telephone: e.target.value })} className={CHAMP} />
-        </div>
-        <label className="flex items-center gap-2 text-sm sm:col-span-2">
-          <input type="checkbox" checked={form.confirme}
-                 onChange={(e) => setForm({ ...form, confirme: e.target.checked })} className="accent-neon" />
+      <EnTete titre={`${t('admin.onglet_participants')} (${confirmes}/${liste.length})`}
+              aide={t('admin.aide_confirme')} />
+
+      <form onSubmit={(e) => { e.preventDefault(); creer.mutate() }} className="carte p-5 mb-6 grid gap-4 sm:grid-cols-2">
+        <Champ libelle={t('admin.nom')} requis valeur={form.nom} onChange={(v) => setForm({ ...form, nom: v })} />
+        <Champ libelle={t('admin.prenom')} valeur={form.prenom} onChange={(v) => setForm({ ...form, prenom: v })} />
+        <Champ libelle={t('admin.pseudo')} aide={t('admin.aide_pseudo')} valeur={form.pseudo}
+               onChange={(v) => setForm({ ...form, pseudo: v })} />
+        <Champ libelle={t('admin.telephone')} valeur={form.telephone} onChange={(v) => setForm({ ...form, telephone: v })} />
+
+        <label className="flex items-center gap-3 text-sm sm:col-span-2">
+          <Bascule valeur={form.confirme} onChange={(v) => setForm({ ...form, confirme: v })} />
           {t('admin.confirme')}
         </label>
-        <button type="submit" disabled={creer.isPending}
-                className="sm:col-span-2 flex items-center justify-center gap-2 rounded-xl bg-neon text-fond font-semibold py-2.5 disabled:opacity-50">
+
+        <button type="submit" disabled={creer.isPending || !form.nom}
+                className="sm:col-span-2 flex items-center justify-center gap-2 rounded-xl bg-neon text-fond font-semibold py-3 tape disabled:opacity-40">
           <Plus size={16} />
           {t('admin.nouveau_participant')}
         </button>
       </form>
 
       {liste.length === 0 ? (
-        <p className="text-texte-faible text-sm">{t('admin.aucun_participant')}</p>
+        <Vide message={t('admin.aucun_participant')} />
       ) : (
-        <ul className="rounded-2xl bg-surface border border-bord divide-y divide-bord">
+        <ul className="carte divide-y divide-bord cascade">
           {liste.map((p) => (
             <li key={p.id} className="flex items-center gap-3 px-4 py-3">
+              <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', p.confirme ? 'bg-succes' : 'bg-alerte')} />
               <div className="flex-1 min-w-0">
                 <p className="truncate">{p.nom_affiche}</p>
                 <p className="text-xs text-texte-faible truncate">
                   {p.nom_complet}{p.telephone ? ` · ${p.telephone}` : ''}
                 </p>
               </div>
-              {!p.confirme && <span className="text-xs text-alerte">{t('commun.non')}</span>}
-              <button onClick={() => supprimer.mutate(p.id)} className="text-texte-faible hover:text-danger">
+              <button onClick={() => supprimer.mutate(p.id)} className="text-texte-faible hover:text-danger transition-colors">
                 <Trash2 size={15} />
               </button>
             </li>
@@ -137,7 +291,25 @@ function OngletParticipants() {
   )
 }
 
-function OngletEquipes() {
+function Champ({ libelle, valeur, onChange, aide, requis }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium mb-1.5">
+        {libelle}{requis && <span className="text-neon ml-0.5">*</span>}
+      </label>
+      <input value={valeur} onChange={(e) => onChange(e.target.value)} className={CHAMP} />
+      {aide && <p className="mt-1.5 text-xs text-texte-faible">{aide}</p>}
+    </div>
+  )
+}
+
+function Vide({ message }) {
+  return <p className="carte px-5 py-8 text-center text-sm text-texte-faible">{message}</p>
+}
+
+// ---------------------------------------------------------------------------
+
+function VueEquipes() {
   const { t } = useTranslation()
   const qc = useQueryClient()
   const { data: liste = [] } = useQuery({ queryKey: QUERY_KEYS.equipes, queryFn: equipeService.liste })
@@ -149,15 +321,18 @@ function OngletEquipes() {
 
   return (
     <div>
-      <div className="rounded-2xl bg-surface border border-bord p-4 mb-5">
-        <p className="text-sm mb-1">{t('admin.generer_equipes')}</p>
-        {/* Avertissement explicite : la regeneration efface les equipes, donc
-            les points deja attribues partent avec elles. */}
-        <p className="text-xs text-alerte mb-3">{t('admin.aide_generer')}</p>
-        <div className="flex gap-2">
+      <EnTete titre={`${t('admin.onglet_equipes')} (${liste.length})`} />
+
+      <div className="carte p-5 mb-6">
+        <p className="font-medium mb-1">{t('admin.generer_equipes')}</p>
+        {/* Avertissement explicite : reconstituer efface les equipes, donc les
+            points deja attribues partent avec elles. */}
+        <p className="text-xs text-alerte mb-4 leading-relaxed">{t('admin.aide_generer')}</p>
+        <div className="grid grid-cols-2 gap-3">
           {['solo', 'duo'].map((mode) => (
             <button key={mode} onClick={() => generer.mutate(mode)} disabled={generer.isPending}
-                    className="flex-1 rounded-xl border border-bord py-2.5 disabled:opacity-50 hover:border-neon">
+                    className="flex items-center justify-center gap-2 rounded-xl border border-bord py-3 tape hover:border-neon disabled:opacity-40">
+              <Wand2 size={15} className="text-neon-sourd" />
               {t(`admin.mode_${mode}`)}
             </button>
           ))}
@@ -165,19 +340,19 @@ function OngletEquipes() {
       </div>
 
       {liste.length === 0 ? (
-        <p className="text-texte-faible text-sm">{t('admin.aucune_equipe')}</p>
+        <Vide message={t('admin.aucune_equipe')} />
       ) : (
-        <ul className="rounded-2xl bg-surface border border-bord divide-y divide-bord">
-          {liste.map((e) => (
-            <li key={e.id} className="px-4 py-3">{e.libelle}</li>
-          ))}
+        <ul className="carte divide-y divide-bord cascade">
+          {liste.map((e) => <li key={e.id} className="px-4 py-3">{e.libelle}</li>)}
         </ul>
       )}
     </div>
   )
 }
 
-function OngletSimulation() {
+// ---------------------------------------------------------------------------
+
+function VueSimulation() {
   const { t } = useTranslation()
   const [effectif, setEffectif] = useState('')
   const [resultat, setResultat] = useState(null)
@@ -194,109 +369,70 @@ function OngletSimulation() {
     }),
   })
 
-  const Ligne = ({ libelle, valeur }) => (
-    <div className="flex justify-between py-2 border-b border-bord last:border-0">
-      <span className="text-texte-faible text-sm">{libelle}</span>
-      <span className="font-semibold">{valeur}</span>
-    </div>
-  )
-
   return (
     <div>
-      <div className="rounded-2xl bg-surface border border-bord p-4 mb-5">
-        <label className="block text-xs text-texte-faible mb-1">{t('admin.effectif')}</label>
-        <input type="number" min="0" value={effectif} onChange={(e) => setEffectif(e.target.value)}
-               className={CHAMP} placeholder="—" />
-        <p className="mt-1 text-xs text-texte-faible">{t('admin.aide_simulation')}</p>
-        <button onClick={() => simuler.mutate()} disabled={simuler.isPending}
-                className="mt-3 w-full rounded-xl bg-neon text-fond font-semibold py-2.5 disabled:opacity-50">
-          {t('admin.simuler')}
-        </button>
+      <EnTete titre={t('admin.onglet_simulation')} aide={t('admin.aide_simulation')} />
+
+      <div className="carte p-5 mb-6">
+        <label className="block text-sm font-medium mb-1.5">{t('admin.effectif')}</label>
+        <div className="flex gap-3">
+          <input type="number" min="0" value={effectif} onChange={(e) => setEffectif(e.target.value)}
+                 className={CHAMP} placeholder="—" />
+          <button onClick={() => simuler.mutate()} disabled={simuler.isPending}
+                  className="shrink-0 rounded-xl bg-neon text-fond font-semibold px-5 tape disabled:opacity-50">
+            {t('admin.simuler')}
+          </button>
+        </div>
       </div>
 
       {resultat && (
-        <div className="rounded-2xl bg-surface border border-bord p-4">
-          <Ligne libelle={t('admin.mode')} valeur={t(`admin.mode_${resultat.mode}`)} />
-          <Ligne libelle={t('admin.poules')} valeur={resultat.nb_poules || '—'} />
-          <Ligne libelle={t('admin.par_poule')} valeur={resultat.par_poule} />
-          <Ligne libelle={t('admin.qualifies')} valeur={resultat.qualifies} />
-          <Ligne libelle={t('admin.tableau')} valeur={resultat.taille_tableau} />
-          <Ligne libelle={t('admin.questions_conseillees')} valeur={resultat.nb_questions} />
-          <Ligne libelle={t('admin.phases')} valeur={resultat.phases.map((p) => p.nom).join(' · ')} />
+        <div className="anim-monte">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+            <Stat libelle={t('admin.mode')} valeur={t(`admin.mode_${resultat.mode}`)} accent />
+            <Stat libelle={t('admin.poules')} valeur={resultat.nb_poules || '—'} />
+            <Stat libelle={t('admin.par_poule')} valeur={resultat.par_poule} />
+            <Stat libelle={t('admin.qualifies')} valeur={resultat.qualifies} />
+            <Stat libelle={t('admin.tableau')} valeur={resultat.taille_tableau} />
+            <Stat libelle={t('admin.questions_conseillees')} valeur={resultat.nb_questions} accent />
+          </div>
 
-          {resultat.notes.map((n, i) => (
-            <p key={i} className="mt-3 text-xs text-texte-doux leading-relaxed">{n}</p>
-          ))}
+          <div className="carte p-5">
+            <p className="etiquette text-texte-faible mb-2">{t('admin.phases')}</p>
+            <div className="flex flex-wrap gap-1.5">
+              {resultat.phases.map((p) => (
+                <span key={p.nom} className="rounded-lg bg-fond-2 border border-bord px-2.5 py-1 text-sm">
+                  {p.nom}
+                </span>
+              ))}
+            </div>
 
-          <button onClick={() => appliquer.mutate()} disabled={appliquer.isPending}
-                  className="mt-4 w-full rounded-xl border border-neon-sourd text-neon py-2.5 disabled:opacity-50">
-            {t('admin.appliquer')}
-          </button>
+            {resultat.notes.map((n, i) => (
+              <p key={i} className="mt-3 text-xs text-texte-doux leading-relaxed border-l-2 border-neon-sourd pl-3">{n}</p>
+            ))}
+
+            <button onClick={() => appliquer.mutate()} disabled={appliquer.isPending}
+                    className="mt-5 w-full rounded-xl border border-neon-sourd text-neon py-3 tape disabled:opacity-50">
+              {appliquer.isSuccess ? t('commun.enregistrer') : t('admin.appliquer')}
+            </button>
+          </div>
         </div>
       )}
     </div>
   )
 }
 
-function OngletReglages() {
-  const { t } = useTranslation()
-  const qc = useQueryClient()
-  const [modifs, setModifs] = useState({})
-
-  const { data: groupes = {} } = useQuery({ queryKey: QUERY_KEYS.reglages, queryFn: reglageService.liste })
-
-  const enregistrer = useMutation({
-    mutationFn: () => reglageService.enregistrer(
-      Object.entries(modifs).map(([cle, valeur]) => ({ cle, valeur })),
-    ),
-    onSuccess: () => { setModifs({}); qc.invalidateQueries({ queryKey: QUERY_KEYS.reglages }) },
-  })
-
-  const valeurDe = (r) => (modifs[r.cle] !== undefined ? modifs[r.cle] : (r.valeur ?? ''))
-
+function Stat({ libelle, valeur, accent }) {
   return (
-    <div>
-      {Object.entries(groupes).map(([groupe, reglages]) => (
-        <section key={groupe} className="mb-5">
-          <h2 className="text-xs uppercase tracking-widest text-texte-faible mb-2">{groupe}</h2>
-          <div className="rounded-2xl bg-surface border border-bord p-4 grid gap-4">
-            {reglages.map((r) => (
-              <div key={r.cle}>
-                <label className="block text-sm mb-1">{r.libelle}</label>
-                {r.type === 'markdown' ? (
-                  <textarea rows={4} value={valeurDe(r)}
-                            onChange={(e) => setModifs({ ...modifs, [r.cle]: e.target.value })}
-                            className={CHAMP} />
-                ) : r.type === 'booleen' ? (
-                  <label className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={valeurDe(r) === '1' || valeurDe(r) === true}
-                           onChange={(e) => setModifs({ ...modifs, [r.cle]: e.target.checked ? '1' : '0' })}
-                           className="accent-neon" />
-                    {t('commun.oui')}
-                  </label>
-                ) : (
-                  <input type={r.type === 'nombre' ? 'number' : 'text'} value={valeurDe(r)}
-                         onChange={(e) => setModifs({ ...modifs, [r.cle]: e.target.value })}
-                         className={CHAMP} />
-                )}
-                {r.aide && <p className="mt-1 text-xs text-texte-faible">{r.aide}</p>}
-              </div>
-            ))}
-          </div>
-        </section>
-      ))}
-
-      {Object.keys(modifs).length > 0 && (
-        <button onClick={() => enregistrer.mutate()} disabled={enregistrer.isPending}
-                className="sticky bottom-4 w-full rounded-xl bg-neon text-fond font-semibold py-3 halo-neon disabled:opacity-50">
-          {t('commun.enregistrer')}
-        </button>
-      )}
+    <div className={cn('carte px-4 py-3', accent && 'halo')}>
+      <p className="etiquette text-texte-faible">{libelle}</p>
+      <p className={cn('titre mt-1 text-xl font-bold', accent ? 'text-neon' : 'text-texte')}>{valeur}</p>
     </div>
   )
 }
 
-function OngletAcces() {
+// ---------------------------------------------------------------------------
+
+function VueAcces() {
   const { t } = useTranslation()
   const qc = useQueryClient()
   const { data: liste = [] } = useQuery({ queryKey: QUERY_KEYS.acces, queryFn: accesService.liste })
@@ -308,27 +444,24 @@ function OngletAcces() {
 
   return (
     <div>
-      <ul className="rounded-2xl bg-surface border border-bord divide-y divide-bord">
+      <EnTete titre={t('admin.onglet_acces')} aide={t('admin.aide_regenerer')} />
+
+      <div className="grid gap-3 sm:grid-cols-2">
         {liste.map((a) => (
-          <li key={a.id} className="px-4 py-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-sm text-texte-faible">
-                  {a.role === 'admin' ? t('admin.code_admin') : t('admin.code_modo')}
-                </p>
-                <p className="font-mono text-lg tracking-widest text-neon">{a.code_clair}</p>
-              </div>
-              <button
-                onClick={() => { if (confirm(t('admin.confirmer_regenerer'))) regenerer.mutate(a.id) }}
-                className="flex items-center gap-1.5 rounded-lg border border-bord px-3 py-2 text-sm hover:border-neon">
-                <RefreshCw size={14} />
-                {t('admin.regenerer')}
-              </button>
-            </div>
-          </li>
+          <div key={a.id} className={cn('carte p-5', a.role === 'admin' && 'halo')}>
+            <p className="etiquette text-texte-faible">
+              {a.role === 'admin' ? t('admin.code_admin') : t('admin.code_modo')}
+            </p>
+            <p className="titre my-3 text-3xl font-bold tracking-[0.2em] text-neon">{a.code_clair}</p>
+            <button
+              onClick={() => { if (confirm(t('admin.confirmer_regenerer'))) regenerer.mutate(a.id) }}
+              className="w-full flex items-center justify-center gap-2 rounded-xl border border-bord py-2.5 text-sm tape hover:border-neon">
+              <RefreshCw size={14} />
+              {t('admin.regenerer')}
+            </button>
+          </div>
         ))}
-      </ul>
-      <p className="mt-3 text-xs text-texte-faible">{t('admin.aide_regenerer')}</p>
+      </div>
     </div>
   )
 }

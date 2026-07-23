@@ -6,7 +6,7 @@ import {
   Users, UsersRound, LayoutGrid, Settings, KeyRound, Trash2, Plus,
   RefreshCw, LogOut, Check, ChevronRight, Menu, X, ShieldCheck, Wand2,
   Swords, HelpCircle, Trophy, ArrowRight, MessageCircle, ExternalLink, Eye, Copy, Check as CheckIcon,
-  BarChart3,
+  BarChart3, Send,
 } from 'lucide-react'
 import {
   participantService, equipeService, reglageService,
@@ -19,6 +19,7 @@ import EtatChaine from '@/components/EtatChaine'
 import FichePerformance from '@/components/FichePerformance'
 import VueManches from '@/pages/admin/VueManches'
 import VueQuestions from '@/pages/admin/VueQuestions'
+import VueMessages from '@/pages/admin/VueMessages'
 import { cn } from '@/utils/cn'
 
 const CHAMP = 'w-full rounded-xl bg-fond-2 border border-bord px-3 py-2.5 outline-none focus:border-neon transition-colors'
@@ -43,7 +44,10 @@ export default function AdminPage() {
   const sections = [
     {
       titre: t('admin.section_tournoi'),
-      entrees: [{ cle: 'reglages', libelle: t('admin.onglet_reglages'), icone: Settings }],
+      entrees: [
+        { cle: 'reglages', libelle: t('admin.onglet_reglages'), icone: Settings },
+        { cle: 'messages', libelle: t('admin.onglet_messages'), icone: Send },
+      ],
     },
     {
       titre: t('admin.section_joueurs'),
@@ -141,6 +145,7 @@ export default function AdminPage() {
 
         <main className="flex-1 min-w-0 anim-monte" key={vue}>
           {vue === 'reglages' && <VueReglages />}
+          {vue === 'messages' && <VueMessages />}
           {vue === 'participants' && <VueParticipants />}
           {vue === 'equipes' && <VueEquipes />}
           {vue === 'simulation' && <VueSimulation />}
@@ -186,7 +191,9 @@ function VueReglages() {
       <EnTete titre={t('admin.onglet_reglages')} />
       <LienInscription />
 
-      {Object.entries(groupes).map(([groupe, reglages]) => (
+      {/* Les modeles de messages ont leur propre onglet « Messages a partager » :
+          on les retire d'ici pour ne pas les presenter deux fois. */}
+      {Object.entries(groupes).filter(([groupe]) => groupe !== 'messages').map(([groupe, reglages]) => (
         <section key={groupe} className="mb-6">
           <div className="flex items-baseline gap-2 mb-2">
             <h2 className="titre text-lg font-semibold text-neon">

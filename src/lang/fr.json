@@ -246,7 +246,16 @@
     "rien_a_importer": "Aucune ligne exploitable pour l'instant.",
     "apercu_import": "Aperçu",
     "questions_de_la_manche": "Questions de cette manche",
-    "aide_choix_manche": "Choisissez la manche à préparer. La banque sert à écrire les questions avant que les manches existent."
+    "aide_choix_manche": "Choisissez la manche à préparer. La banque sert à écrire les questions avant que les manches existent.",
+    "onglet_messages": "Messages à partager",
+    "aide_messages": "Des messages prêts à coller dans le groupe. Le lien, la date et les prix se remplissent tout seuls : tu modifies le texte, jamais tu ne retapes une adresse ou une date à la main.",
+    "copier_message": "Copier pour le groupe",
+    "message_copie": "Copié — colle-le dans le groupe",
+    "modifier_message": "Modifier le texte",
+    "apercu_message": "Aperçu — c'est ce qui sera copié",
+    "variables_dispo": "Remplacés automatiquement",
+    "aide_variables": "Écris ces repères dans le texte, ils deviennent la vraie valeur à la copie.",
+    "aucun_message": "Aucun message à partager pour l'instant."
   },
   "nav": {
     "accueil": "Accueil",
